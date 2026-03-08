@@ -491,7 +491,12 @@ int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *device)
 	snprintf(fw_name, sizeof(fw_name), "aic8800/%s", name);
 	printk("%s: request firmware = %s\n", __func__, fw_name);
 
-	ret = request_firmware(&fw, fw_name, device);
+	/*
+	 * Pass NULL as device: the BSP probes on func2 but operates on func1.
+	 * Using func1's device would leave devres entries (firmware name cache)
+	 * that block the fdrv probe on func1 with -EBUSY in kernel 6.18+.
+	 */
+	ret = request_firmware(&fw, fw_name, NULL);
 	if (ret < 0) {
 		printk("Load %s fail\n", fw_name);
 		return -1;
