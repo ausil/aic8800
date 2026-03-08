@@ -1380,7 +1380,6 @@ static int aic_priv_cmd_country_set(struct rwnx_hw *rwnx_hw, int argc,
 
 	regdomain = getRegdomainFromRwnxDB(rwnx_hw->wiphy, argv[1]);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 	ret = regulatory_set_wiphy_regd(
 		rwnx_hw->wiphy, regdomain);
 #else
@@ -1800,11 +1799,7 @@ int android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 	}
 
 #ifdef CONFIG_COMPAT
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0))
 	if (in_compat_syscall())
-#else
-	if (is_compat_task())
-#endif
 	{
 		compat_android_wifi_priv_cmd compat_priv_cmd;
 		if (copy_from_user(&compat_priv_cmd, ifr->ifr_data, sizeof(compat_android_wifi_priv_cmd))) {
@@ -1874,13 +1869,9 @@ int android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 #endif
 			AICWFDBG(LOGINFO, "%s country code:%c%c\n", __func__, toupper(country[0]), toupper(country[1]));
 			regdomain = getRegdomainFromRwnxDB(vif->rwnx_hw->wiphy, country);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 			if((ret = regulatory_set_wiphy_regd(vif->rwnx_hw->wiphy, regdomain))){
 				printk("regulatory_set_wiphy_regd fail \r\n");
 			}
-#else
-			wiphy_apply_custom_regulatory(vif->rwnx_hw->wiphy, regdomain);
-#endif
 
 #ifdef CONFIG_RADAR_OR_IR_DETECT
 			rwnx_radar_set_domain(&vif->rwnx_hw->radar, regdomain->dfs_region);
@@ -2094,11 +2085,7 @@ int devipc_cust_msg(struct net_device *net, struct ifreq *ifr, int cmd)
 	}
 
 #ifdef CONFIG_COMPAT
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0))
 	if (in_compat_syscall())
-#else
-	if (is_compat_task())
-#endif
 	{
 		compat_android_wifi_priv_cmd compat_priv_cmd;
 		if (copy_from_user(&compat_priv_cmd, ifr->ifr_data, sizeof(compat_android_wifi_priv_cmd))) {
