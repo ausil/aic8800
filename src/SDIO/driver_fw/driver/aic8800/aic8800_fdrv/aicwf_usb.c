@@ -936,9 +936,7 @@ static struct usb_driver aicwf_usbdrvr = {
 	.resume = aicwf_usb_resume,
 	.reset_resume = aicwf_usb_reset_resume,
 	.supports_autosuspend = 1,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
 	.disable_hub_initiated_lpm = 1,
-#endif
 };
 
 void aicwf_usb_register(void)

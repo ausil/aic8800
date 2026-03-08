@@ -12,14 +12,10 @@
  */
 
 #include <linux/list.h>
-#include <linux/version.h>
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
 #include <linux/firmware.h>
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 12, 0)
-#include <linux/hardirq.h>
-#endif
 #include <linux/fs.h>
 #include "aicsdio_txrxif.h"
 #include "aicsdio.h"
@@ -470,16 +466,12 @@ void rwnx_rx_handle_msg(struct aic_sdio_dev *sdiodev, struct ipc_e2a_msg *msg)
 							msg_hdlrs[MSG_T(msg->id)][MSG_I(msg->id)]);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
-#endif
 
 #define MD5(x) x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[13],x[14],x[15]
 #define MD5PINRT "file md5:%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\r\n"
 
 int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *device)
 {
-
-#ifdef CONFIG_USE_FW_REQUEST
 	const struct firmware *fw = NULL;
 	void *buffer = NULL;
 	MD5_CTX md5;
@@ -526,138 +518,6 @@ int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *device)
 	release_firmware(fw);
 
 	return size;
-#else
-	void *buffer = NULL;
-	char *path = NULL;
-	struct file *fp = NULL;
-	int size = 0, len = 0;// i = 0;
-	ssize_t rdlen = 0;
-	//u32 *src = NULL, *dst = NULL;
-	MD5_CTX md5;
-	unsigned char decrypt[16];
-
-	#ifdef CONFIG_FIRMWARE_ARRAY
-		size = aicwf_get_firmware_array((char*)name, fw_buf);
-		printk("%s size:%d \r\n", __func__, size);
-		MD5Init(&md5);
-		MD5Update(&md5, (unsigned char *)*fw_buf, size);
-		MD5Final(&md5, decrypt);
-		printk(MD5PINRT, MD5(decrypt));
-
-		return size;
-	#endif
-
-	/* get the firmware path */
-	path = __getname();
-	if (!path) {
-		*fw_buf = NULL;
-		return -1;
-	}
-
-    if(strlen(aic_fw_path) > 0){
-        len = snprintf(path, AICBSP_FW_PATH_MAX, "%s/%s", aic_fw_path, name);
-    }else{
-	    len = snprintf(path, AICBSP_FW_PATH_MAX, "%s/%s", AICBSP_FW_PATH, name);
-    }
-	if (len >= AICBSP_FW_PATH_MAX) {
-		printk("%s: %s file's path too long\n", __func__, name);
-		*fw_buf = NULL;
-		__putname(path);
-		return -1;
-	}
-
-	printk("%s :firmware path = %s  \n", __func__, path);
-
-	/* open the firmware file */
-	fp = filp_open(path, O_RDONLY, 0);
-	if (IS_ERR_OR_NULL(fp)) {
-		printk("%s: %s file failed to open\n", __func__, name);
-		*fw_buf = NULL;
-		__putname(path);
-		fp = NULL;
-		return -1;
-	}
-
-	size = i_size_read(file_inode(fp));
-	if (size <= 0) {
-		printk("%s: %s file size invalid %d\n", __func__, name, size);
-		*fw_buf = NULL;
-		__putname(path);
-		filp_close(fp, NULL);
-		fp = NULL;
-		return -1;
-	}
-
-	/* start to read from firmware file */
-	buffer = vmalloc(size);
-
-	if (!buffer) {
-		*fw_buf = NULL;
-		__putname(path);
-		filp_close(fp, NULL);
-		fp = NULL;
-		return -1;
-	}else{
-		memset(buffer, 0, size);
-	}
-
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
-	rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-#else
-	rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-#endif
-
-	if (size != rdlen) {
-		printk("%s: %s file rdlen invalid %ld\n", __func__, name, (long int)rdlen);
-		*fw_buf = NULL;
-		__putname(path);
-		filp_close(fp, NULL);
-		fp = NULL;
-		vfree(buffer);
-		buffer = NULL;
-		return -1;
-	}
-	if (rdlen > 0) {
-		fp->f_pos += rdlen;
-	}
-
-#if 0
-	/*start to transform the data format*/
-	src = (u32 *)buffer;
-	dst = (u32 *)vmalloc(size);
-
-	if (!dst) {
-		*fw_buf = NULL;
-		__putname(path);
-		filp_close(fp, NULL);
-		fp = NULL;
-		vfree(buffer);
-		buffer = NULL;
-		return -1;
-	}else{
-		memset(dst, 0, size);
-	}
-
-	for (i = 0; i < (size/4); i++) {
-		dst[i] = src[i];
-	}
-#endif
-
-	__putname(path);
-	filp_close(fp, NULL);
-	fp = NULL;
-	//vfree(buffer);
-	//buffer = NULL;
-	*fw_buf = (u32*)buffer;
-
-	MD5Init(&md5);
-	MD5Update(&md5, (unsigned char *)buffer, size);
-	MD5Final(&md5, decrypt);
-
-	printk(MD5PINRT, MD5(decrypt));
-
-	return size;
-#endif
 }
 
 extern int testmode;
