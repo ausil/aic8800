@@ -78,12 +78,10 @@
 
 
 
-#if LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION
 #define IEEE80211_MAX_AMPDU_BUF                             IEEE80211_MAX_AMPDU_BUF_HE
 #define IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB
 #define IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMING_FB
 #define IEEE80211_HE_PHY_CAP3_RX_HE_MU_PPDU_FROM_NON_AP_STA IEEE80211_HE_PHY_CAP3_RX_PARTIAL_BW_SU_IN_20MHZ_MU
-#endif
 
 #ifndef IEEE80211_MAX_AMPDU_BUF
 #define IEEE80211_MAX_AMPDU_BUF                             0x100
@@ -99,34 +97,9 @@
 #endif
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-enum nl80211_ac {
-        NL80211_AC_VO,
-        NL80211_AC_VI,
-        NL80211_AC_BE,
-        NL80211_AC_BK,
-        NL80211_NUM_ACS
-};
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-struct ieee80211_vht_operation {
-        u8 vht_op_info_chwidth;
-        u8 vht_op_info_chan_center_freq_seg1_idx;
-        u8 vht_op_info_chan_center_freq_seg2_idx;
-        __le16 vht_basic_mcs_set;
-} __packed;
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
-#define NL80211_IFTYPE_P2P_DEVICE 10
-#define IEEE80211_RADIOTAP_AMPDU_STATUS 20
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-#define IEEE80211_RADIOTAP_VHT                                  21
-#define IEEE80211_RADIOTAP_VHT_KNOWN_GI                         0x0004
-#define IEEE80211_RADIOTAP_VHT_KNOWN_BANDWIDTH                  0x0040
 
 #define IEEE80211_RADIOTAP_VHT_FLAG_STBC                        0x01
 #define IEEE80211_RADIOTAP_VHT_FLAG_SGI                         0x04
@@ -570,10 +543,6 @@ struct aic_sta {
 	struct ieee80211_he_cap_elem he_cap_elem;
 	struct ieee80211_he_mcs_nss_supp he_mcs_nss_supp;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-	__le32 vht_cap_info;
-	struct ieee80211_vht_mcs_info supp_mcs;
-#endif
 };
 #endif
 
@@ -878,10 +847,6 @@ struct rwnx_hw {
 	struct sta_tx_flowctrl sta_flowctrl[NX_REMOTE_STA_MAX];
 #if 0
 	bool he_flag;
-#endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
-    struct mac_chan_op ap_chan;
-    struct ieee80211_channel set_chan;
 #endif
 #ifdef CONFIG_VHT_FOR_OLD_KERNEL
     struct ieee80211_sta_vht_cap vht_cap_2G;

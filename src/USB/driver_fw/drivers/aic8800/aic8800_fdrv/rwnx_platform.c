@@ -41,12 +41,6 @@
 #endif
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
-static inline struct inode *file_inode(const struct file *f)
-{
-        return f->f_dentry->d_inode;
-}
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)) */
 struct rwnx_plat *g_rwnx_plat = NULL;
 
 #define FW_PATH_MAX_LEN 200
@@ -473,12 +467,6 @@ powerlimit_info_t powerlimit_info = {0,};
 #endif
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
-static inline struct inode *file_inode(const struct file *f)
-{
-        return f->f_dentry->d_inode;
-}
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)) */
 
 
 #endif/* !CONFIG_ROM_PATCH_EN */
@@ -618,12 +606,14 @@ static int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *dev
 	void *buffer=NULL;
 	MD5_CTX md5;
 	unsigned char decrypt[16];
+	char fw_name[256];
 	int size = 0;
 	int ret = 0;
 
-	AICWFDBG(LOGINFO, "%s: request firmware = %s \n", __func__ ,name);
+	snprintf(fw_name, sizeof(fw_name), "aic8800/%s", name);
+	AICWFDBG(LOGINFO, "%s: request firmware = %s \n", __func__, fw_name);
 
-	ret = request_firmware(&fw, name, NULL);
+	ret = request_firmware(&fw, fw_name, NULL);
 
 	if (ret < 0) {
 		AICWFDBG(LOGERROR, "Load %s fail\n", name);
@@ -713,11 +703,7 @@ static int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *dev
         return -1;
     }
 
-    #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
     rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-    #else
-    rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-    #endif
 
     *((char*)buffer + size) = 0;
     if (size != rdlen) {
@@ -986,11 +972,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name,
         }
 
 
-        #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
         rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-        #else
-        rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-        #endif
 
         if(size != rdlen){
                 printk("%s: %s file rdlen invalid %ld\n", __func__, name, (long int)rdlen);
