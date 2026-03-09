@@ -2,7 +2,7 @@
 
 Name:           aic8800-dkms
 Version:        %{modversion}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        AIC8800 WiFi/BT drivers (DKMS)
 License:        GPL-2.0-only
 URL:            https://github.com/radxa-pkg/aic8800
@@ -102,6 +102,9 @@ dkms remove -m aic8800-usb -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/
 
 %changelog
+* Mon Mar 09 2026 Dennis <dennis@ausil.us> - 2.0.0-2
+- Fix in_irq() removal in kernel 6.19 (use in_hardirq())
+
 * Sun Mar 08 2026 Dennis <dennis@ausil.us> - 2.0.0-1
 - Split into aic8800-sdio-dkms and aic8800-usb-dkms subpackages
 - aic8800-sdio-dkms Provides/Obsoletes aic8800-dkms
