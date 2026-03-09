@@ -75,136 +75,16 @@
 
 
 
-#if LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION
 #define IEEE80211_MAX_AMPDU_BUF                             IEEE80211_MAX_AMPDU_BUF_HE
 #define IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB
 #define IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMING_FB
 #define IEEE80211_HE_PHY_CAP3_RX_HE_MU_PPDU_FROM_NON_AP_STA IEEE80211_HE_PHY_CAP3_RX_PARTIAL_BW_SU_IN_20MHZ_MU
-#endif
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-enum nl80211_ac {
-        NL80211_AC_VO,
-        NL80211_AC_VI,
-        NL80211_AC_BE,
-        NL80211_AC_BK,
-        NL80211_NUM_ACS
-};
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-struct ieee80211_vht_operation {
-        u8 vht_op_info_chwidth;
-        u8 vht_op_info_chan_center_freq_seg1_idx;
-        u8 vht_op_info_chan_center_freq_seg2_idx;
-        __le16 vht_basic_mcs_set;
-} __packed;
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0)
-#define NL80211_IFTYPE_P2P_DEVICE 10
-#define IEEE80211_RADIOTAP_AMPDU_STATUS 20
-#endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-#define IEEE80211_RADIOTAP_VHT                                  21
-#define IEEE80211_RADIOTAP_VHT_KNOWN_GI                         0x0004
-#define IEEE80211_RADIOTAP_VHT_KNOWN_BANDWIDTH                  0x0040
 
-#define IEEE80211_RADIOTAP_VHT_FLAG_STBC                        0x01
-#define IEEE80211_RADIOTAP_VHT_FLAG_SGI                         0x04
-
-#define NL80211_FEATURE_CELL_BASE_REG_HINTS              1 << 3
-#define NL80211_FEATURE_P2P_DEVICE_NEEDS_CHANNEL         1 << 4
-#define NL80211_FEATURE_SAE                              1 << 5
-#define NL80211_FEATURE_LOW_PRIORITY_SCAN                1 << 6
-#define NL80211_FEATURE_SCAN_FLUSH                       1 << 7
-#define NL80211_FEATURE_AP_SCAN                          1 << 8
-#define NL80211_FEATURE_VIF_TXPOWER                      1 << 9
-#define NL80211_FEATURE_NEED_OBSS_SCAN                   1 << 10
-#define NL80211_FEATURE_P2P_GO_CTWIN                     1 << 11
-#define NL80211_FEATURE_P2P_GO_OPPPS                     1 << 12
-
-/* 802.11ac VHT Capabilities */
-#define IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_3895                  0x00000000
-#define IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_7991                  0x00000001
-#define IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_11454                 0x00000002
-#define IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160MHZ                0x00000004
-#define IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160_80PLUS80MHZ       0x00000008
-#define IEEE80211_VHT_CAP_RXLDPC                                0x00000010
-#define IEEE80211_VHT_CAP_SHORT_GI_80                           0x00000020
-#define IEEE80211_VHT_CAP_SHORT_GI_160                          0x00000040
-#define IEEE80211_VHT_CAP_TXSTBC                                0x00000080
-#define IEEE80211_VHT_CAP_RXSTBC_1                              0x00000100
-#define IEEE80211_VHT_CAP_RXSTBC_2                              0x00000200
-#define IEEE80211_VHT_CAP_RXSTBC_3                              0x00000300
-#define IEEE80211_VHT_CAP_RXSTBC_4                              0x00000400
-#define IEEE80211_VHT_CAP_SU_BEAMFORMER_CAPABLE                 0x00000800
-#define IEEE80211_VHT_CAP_SU_BEAMFORMEE_CAPABLE                 0x00001000
-#define IEEE80211_VHT_CAP_BEAMFORMER_ANTENNAS_MAX               0x00006000
-#define IEEE80211_VHT_CAP_SOUNDING_DIMENTION_MAX                0x00030000
-#define IEEE80211_VHT_CAP_MU_BEAMFORMER_CAPABLE                 0x00080000
-#define IEEE80211_VHT_CAP_MU_BEAMFORMEE_CAPABLE                 0x00100000
-#define IEEE80211_VHT_CAP_VHT_TXOP_PS                           0x00200000
-#define IEEE80211_VHT_CAP_HTC_VHT                               0x00400000
-#define IEEE80211_VHT_CAP_MAX_A_MPDU_LENGTH_EXPONENT_SHIFT      23
-#define IEEE80211_VHT_CAP_MAX_A_MPDU_LENGTH_EXPONENT_MASK       \
-                (7 << IEEE80211_VHT_CAP_MAX_A_MPDU_LENGTH_EXPONENT_SHIFT)
-#define IEEE80211_VHT_CAP_VHT_LINK_ADAPTATION_VHT_UNSOL_MFB     0x08000000
-#define IEEE80211_VHT_CAP_VHT_LINK_ADAPTATION_VHT_MRQ_MFB       0x0c000000
-#define IEEE80211_VHT_CAP_RX_ANTENNA_PATTERN                    0x10000000
-#define IEEE80211_VHT_CAP_TX_ANTENNA_PATTERN                    0x20000000
-
-enum ieee80211_vht_mcs_support {
-        IEEE80211_VHT_MCS_SUPPORT_0_7   = 0,
-        IEEE80211_VHT_MCS_SUPPORT_0_8   = 1,
-        IEEE80211_VHT_MCS_SUPPORT_0_9   = 2,
-        IEEE80211_VHT_MCS_NOT_SUPPORTED = 3,
-};
-
-enum nl80211_chan_width {
-        NL80211_CHAN_WIDTH_20_NOHT,
-        NL80211_CHAN_WIDTH_20,
-        NL80211_CHAN_WIDTH_40,
-        NL80211_CHAN_WIDTH_80,
-        NL80211_CHAN_WIDTH_80P80,
-        NL80211_CHAN_WIDTH_160,
-};
-
-struct cfg80211_chan_def {
-        struct ieee80211_channel *chan;
-        enum nl80211_chan_width width;
-        u32 center_freq1;
-        u32 center_freq2;
-};
-
-enum nl80211_mesh_power_mode {
-        NL80211_MESH_POWER_UNKNOWN,
-        NL80211_MESH_POWER_ACTIVE,
-        NL80211_MESH_POWER_LIGHT_SLEEP,
-        NL80211_MESH_POWER_DEEP_SLEEP,
-        __NL80211_MESH_POWER_AFTER_LAST,
-        NL80211_MESH_POWER_MAX = __NL80211_MESH_POWER_AFTER_LAST - 1
-};
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)
-#define NL80211_MESHCONF_POWER_MODE 26
-
-/*
- * TDLS capabililites to be enabled in the 5th byte of the
- * @WLAN_EID_EXT_CAPABILITY information element
- */
-#define WLAN_EXT_CAPA5_TDLS_ENABLED	BIT(5)
-#define WLAN_EXT_CAPA5_TDLS_PROHIBITED	BIT(6)
-
-#define WLAN_EXT_CAPA8_OPMODE_NOTIF	BIT(6)
-
-/* TDLS specific payload type in the LLC/SNAP header */
-#define WLAN_TDLS_SNAP_RFTYPE	0x2
-
-#endif
 
 /**
  * struct rwnx_bcn - Information of the beacon in used (AP mode)
@@ -482,10 +362,6 @@ struct aic_sta {
 	struct ieee80211_he_cap_elem he_cap_elem;
 	struct ieee80211_he_mcs_nss_supp he_mcs_nss_supp;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-	__le32 vht_cap_info;
-	struct ieee80211_vht_mcs_info supp_mcs;
-#endif
 };
 #endif
 
@@ -785,10 +661,6 @@ struct rwnx_hw {
 	struct sta_tx_flowctrl sta_flowctrl[NX_REMOTE_STA_MAX];
 #if 0
 	bool he_flag;
-#endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0)
-    struct mac_chan_op ap_chan;
-    struct ieee80211_channel set_chan;
 #endif
 #ifdef CONFIG_VHT_FOR_OLD_KERNEL
     struct ieee80211_sta_vht_cap vht_cap_2G;

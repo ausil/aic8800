@@ -164,20 +164,11 @@ static int aicwf_get_name(struct net_device *dev,
 			case FORMATMOD_VHT:
 				snprintf(wrqu->name, IFNAMSIZ, "IEEE 802.11ac");
 				break;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 			case FORMATMOD_HE_MU:
 			case FORMATMOD_HE_SU:
 			case FORMATMOD_HE_ER:
 				snprintf(wrqu->name, IFNAMSIZ, "IEEE 802.11ax");
 				break;
-#else
-			//kernel not support he
-			case FORMATMOD_HE_MU:
-			case FORMATMOD_HE_SU:
-			case FORMATMOD_HE_ER:
-				snprintf(wrqu->name, IFNAMSIZ, "IEEE 802.11ax");
-				break;
-#endif
 			}
 
 		
@@ -467,14 +458,12 @@ static inline char *aicwf_get_iwe_stream_protocol(struct rwnx_hw* rwnx_hw,
 		vht_cap = true;
 	}
 	
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)|| defined(CONFIG_HE_FOR_OLD_KERNEL)
 	/* parsing HE_CAP_IE	 */
 	ie_content = NULL;
 	ie_content = cfg80211_find_ie(WLAN_EID_EXTENSION, payload, scan_re->ind->length);
 	if (ie_content != NULL && ie_content[2] == WLAN_EID_EXT_HE_CAPABILITY){
 		he_cap = true;
 	}
-#endif
 
 	/* Add the protocol name */
 	iwe->cmd = SIOCGIWNAME;
@@ -657,7 +646,6 @@ static inline char *aicwf_get_iwe_stream_rate(struct rwnx_hw* rwnx_hw,
 		//need to counter antenna number for AC
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)|| defined(CONFIG_HE_FOR_OLD_KERNEL)
 	/* parsing HE_CAP_IE	 */
 	ie_content = NULL;
 	/*0xFF+len+WLAN_EID_EXTENSION+playload */
@@ -679,7 +667,6 @@ static inline char *aicwf_get_iwe_stream_rate(struct rwnx_hw* rwnx_hw,
 		//TO DO:
 		//need to counter antenna number for AX
 	}
-#endif
 
 	if(he_cap == true){
 		if(he_bw == NL80211_CHAN_WIDTH_20){

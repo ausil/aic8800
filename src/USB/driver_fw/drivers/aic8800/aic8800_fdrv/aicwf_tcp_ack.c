@@ -24,22 +24,14 @@ void intf_tcp_drop_msg(struct rwnx_hw *priv,
 	kfree(msg);
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-void tcp_ack_timeout(unsigned long data)
-#else
 void tcp_ack_timeout(struct timer_list *t)
-#endif
 {
 	//printk("%s \n",__func__);
 	struct tcp_ack_info *ack_info;
 	struct msg_buf *msg;
 	struct tcp_ack_manage *ack_m = NULL;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-	ack_info = (struct tcp_ack_info *)data;
-#else
 	ack_info = container_of(t,struct tcp_ack_info,timer);
-#endif
 
 	ack_m = container_of(ack_info, struct tcp_ack_manage,
 			     ack_info[ack_info->ack_info_num]);
@@ -81,12 +73,7 @@ void tcp_ack_init(struct rwnx_hw *priv)
 		ack_info->last_time = jiffies;
 		ack_info->timeout = msecs_to_jiffies(ACK_OLD_TIME);
 
-		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-			setup_timer(&ack_info->timer, tcp_ack_timeout,
-				    (unsigned long)ack_info);
-		#else
 			timer_setup(&ack_info->timer,tcp_ack_timeout,0);
-		#endif
 	}
 
 	atomic_set(&ack_m->enable, 1);
@@ -106,7 +93,7 @@ void tcp_ack_deinit(struct rwnx_hw *priv)
 		drop_msg = NULL;
 
 		write_seqlock_bh(&ack_m->ack_info[i].seqlock);
-		del_timer(&ack_m->ack_info[i].timer);
+		timer_delete(&ack_m->ack_info[i].timer);
 		drop_msg = ack_m->ack_info[i].msgbuf;
 		ack_m->ack_info[i].msgbuf = NULL;
 		write_sequnlock_bh(&ack_m->ack_info[i].seqlock);
@@ -375,7 +362,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				//printk("%lx \n",ack_info->msgbuf);
 				drop_msg = ack_info->msgbuf;
 				ack_info->msgbuf = NULL;
-				del_timer(&ack_info->timer);
+				timer_delete(&ack_info->timer);
 			}else{
 				//printk("msgbuf is NULL \n");
 			}
@@ -409,7 +396,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				   atomic_read(&ack_m->max_drop_cnt)))) {
 			ack_info->drop_cnt = 0;
 			ack_info->in_send_msg = new_msgbuf;
-			del_timer(&ack_info->timer);
+			timer_delete(&ack_info->timer);
 		} else {
 			ret = 1;
 			ack_info->msgbuf = new_msgbuf;
@@ -472,7 +459,7 @@ int tcp_ack_handle_new(struct msg_buf *new_msgbuf,
 			ack_info->drop_cnt = 0;
 			//send_msg = new_msgbuf;
 			ack_info->in_send_msg = new_msgbuf;
-			del_timer(&ack_info->timer);
+			timer_delete(&ack_info->timer);
 		}else{
 			ret = 1;
 			ack_info->msgbuf = new_msgbuf;

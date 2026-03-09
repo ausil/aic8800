@@ -302,10 +302,6 @@ static void rwnx_rx_statistic(struct rwnx_hw *rwnx_hw, struct hw_rxhdr *hw_rxhdr
  * When vif is an AP interface, multicast skb are forwarded and resent, whereas
  * skb for other BSS's STA are only resent.
  */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0))
-#define RAISE_RX_SOFTIRQ() \
-    cpu_raise_softirq(smp_processor_id(), NET_RX_SOFTIRQ)
-#endif /* LINUX_VERSION_CODE  */
 
 void rwnx_rx_data_skb_resend(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif, struct sk_buff *skb)
 {
@@ -366,13 +362,9 @@ static void rwnx_rx_data_skb_forward(struct rwnx_hw *rwnx_hw, struct rwnx_vif *r
 
     if (1) {//(check_fwstate(pmlmepriv, WIFI_STATION_STATE | WIFI_ADHOC_STATE) == _TRUE) {
         /* Insert NAT2.5 RX here! */
-	#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-        br_port = rwnx_vif->ndev->br_port;
-	#else
         rcu_read_lock();
         br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
         rcu_read_unlock();
-	#endif
 
         if (br_port) {
             int nat25_handle_frame(struct rwnx_vif *vif, struct sk_buff *skb);
@@ -410,15 +402,7 @@ static void rwnx_rx_data_skb_forward(struct rwnx_hw *rwnx_hw, struct rwnx_vif *r
 	* If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
 	* * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
 	*/
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
 		netif_rx_ni(rx_skb);
-	#else
-		ulong flags;
-		netif_rx(rx_skb);
-		local_irq_save(flags);
-		RAISE_RX_SOFTIRQ();
-		local_irq_restore(flags);
-	#endif
 	}
 	#endif
 	REG_SW_CLEAR_PROFILING(rwnx_hw, SW_PROF_IEEE80211RX);
@@ -447,13 +431,8 @@ static bool rwnx_rx_data_skb(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
         rwnx_rxdata_process_amsdu(rwnx_hw, skb, flags_vif_idx, &list);
         #else
         int count;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
         ieee80211_amsdu_to_8023s(skb, &list, rwnx_vif->ndev->dev_addr,
                                  RWNX_VIF_TYPE(rwnx_vif), 0, NULL, NULL, false);
-#else
-        ieee80211_amsdu_to_8023s(skb, &list, rwnx_vif->ndev->dev_addr,
-                                 RWNX_VIF_TYPE(rwnx_vif), 0, NULL, NULL);
-#endif
 
         count = skb_queue_len(&list);
         if (count > ARRAY_SIZE(rwnx_hw->stats.amsdus_rx))
@@ -554,13 +533,9 @@ static bool rwnx_rx_data_skb(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 
             if (1) {//(check_fwstate(pmlmepriv, WIFI_STATION_STATE | WIFI_ADHOC_STATE) == _TRUE) {
                 /* Insert NAT2.5 RX here! */
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-                br_port = rwnx_vif->ndev->br_port;
-#else
                 rcu_read_lock();
                 br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
                 rcu_read_unlock();
-#endif
 
                 if (br_port) {
                     int nat25_handle_frame(struct rwnx_vif *vif, struct sk_buff *skb);
@@ -602,15 +577,7 @@ static bool rwnx_rx_data_skb(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
             * If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
             * * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
             */
-            #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
                 netif_rx_ni(rx_skb);
-            #else
-                ulong flags;
-                netif_rx(rx_skb);
-                local_irq_save(flags);
-                RAISE_RX_SOFTIRQ();
-                local_irq_restore(flags);
-            #endif
             }
             #endif
             REG_SW_CLEAR_PROFILING(rwnx_hw, SW_PROF_IEEE80211RX);
@@ -623,37 +590,6 @@ static bool rwnx_rx_data_skb(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 }
 
 #ifdef CONFIG_HE_FOR_OLD_KERNEL
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 0))
-const u8 *cfg80211_find_ie_match(u8 eid, const u8 *ies, int len,
-				 const u8 *match, int match_len,
-				 int match_offset)
-{
-	const struct element *elem;
-
-	/* match_offset can't be smaller than 2, unless match_len is
-	 * zero, in which case match_offset must be zero as well.
-	 */
-	if (WARN_ON((match_len && match_offset < 2) ||
-		    (!match_len && match_offset)))
-		return NULL;
-
-	for_each_element_id(elem, eid, ies, len) {
-		if (elem->datalen >= match_offset - 2 + match_len &&
-		    !memcmp(elem->data + match_offset - 2, match, match_len))
-			return (void *)elem;
-	}
-
-	return NULL;
-}
-#endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0))
-
-static inline const u8 *cfg80211_find_ext_ie(u8 ext_eid, const u8* ies, int len)
-{
-        return cfg80211_find_ie_match(WLAN_EID_EXTENSION, ies, len,
-                                                        &ext_eid, 1, 2);
-}
-#endif
 
 #endif
 
@@ -741,39 +677,23 @@ static void rwnx_rx_mgmt(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
     if (ieee80211_is_beacon(mgmt->frame_control)) {
         if ((RWNX_VIF_TYPE(rwnx_vif) == NL80211_IFTYPE_MESH_POINT) &&
             hw_rxhdr->flags_new_peer) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
-            cfg80211_notify_new_peer_candidate(rwnx_vif->ndev, mgmt->sa,
-                                               mgmt->u.beacon.variable,
-                                               skb->len - offsetof(struct ieee80211_mgmt,
-                                                                   u.beacon.variable),
-                                               GFP_ATOMIC);
-#else
             /* TODO: the value of parameter sig_dbm need to be confirmed */
             cfg80211_notify_new_peer_candidate(rwnx_vif->ndev, mgmt->sa,
                                                mgmt->u.beacon.variable,
                                                skb->len - offsetof(struct ieee80211_mgmt,
                                                                    u.beacon.variable),
                                                rxvect->rssi1, GFP_ATOMIC);
-#endif
         } else {
 
-    #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-            cfg80211_report_obss_beacon(rwnx_hw->wiphy, skb->data, skb->len,
-                                        hw_rxhdr->phy_info.phy_prim20_freq,
-                                        rxvect->rssi1, GFP_KERNEL);
-    #else
             cfg80211_report_obss_beacon(rwnx_hw->wiphy, skb->data, skb->len,
                                         hw_rxhdr->phy_info.phy_prim20_freq,
                                         rxvect->rssi1);
-    #endif
         }
     } else if ((ieee80211_is_deauth(mgmt->frame_control) ||
                 ieee80211_is_disassoc(mgmt->frame_control)) &&
                (mgmt->u.deauth.reason_code == WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA ||
                 mgmt->u.deauth.reason_code == WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA)) {
-        #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)  // TODO: process unprot mgmt
         cfg80211_rx_unprot_mlme_mgmt(rwnx_vif->ndev, skb->data, skb->len);
-        #endif
     } else if ((RWNX_VIF_TYPE(rwnx_vif) == NL80211_IFTYPE_STATION) &&
                (ieee80211_is_action(mgmt->frame_control) &&
                 (mgmt->u.action.category == 6))) {
@@ -785,13 +705,8 @@ static void rwnx_rx_mgmt(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
         ft_event.ric_ies_len = 0;
         cfg80211_ft_event(rwnx_vif->ndev, &ft_event);
     } else {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
         cfg80211_rx_mgmt(&rwnx_vif->wdev, hw_rxhdr->phy_info.phy_prim20_freq,
                          rxvect->rssi1, skb->data, skb->len, 0);
-#else
-        cfg80211_rx_mgmt(rwnx_vif->ndev, hw_rxhdr->phy_info.phy_prim20_freq,
-                         rxvect->rssi1, skb->data, skb->len, 0);
-#endif
     }
 }
 
@@ -1084,11 +999,7 @@ static void rwnx_rx_add_rtap_hdr(struct rwnx_hw* rwnx_hw,
             *pos |= IEEE80211_RADIOTAP_MCS_FMT_GF;
         if (fec_coding)
             *pos |= IEEE80211_RADIOTAP_MCS_FEC_LDPC;
-        #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-        *pos++ |= stbc << 5;
-        #else
         *pos++ |= stbc << IEEE80211_RADIOTAP_MCS_STBC_SHIFT;
-        #endif
         *pos++ = rate_idx;
     }
 
@@ -1142,11 +1053,7 @@ static void rwnx_rx_add_rtap_hdr(struct rwnx_hw* rwnx_hw,
         *pos = (rate_idx << 4) | vht_nss;
         pos += 4;
         if (fec_coding)
-            #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
-            *pos |= 0x01;
-            #else
             *pos |= IEEE80211_RADIOTAP_CODING_LDPC_USER0;
-            #endif
         pos++;
         // group ID
         pos++;
@@ -1367,13 +1274,7 @@ struct reord_ctrl_info *reord_init_sta(struct aicwf_rx_priv* rx_priv, const u8 *
         preorder_ctrl->rx_priv= rx_priv;
         INIT_LIST_HEAD(&preorder_ctrl->reord_list);
         spin_lock_init(&preorder_ctrl->reord_list_lock);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
-        init_timer(&preorder_ctrl->reord_timer);
-        preorder_ctrl->reord_timer.data = (ulong) preorder_ctrl;
-        preorder_ctrl->reord_timer.function = reord_timeout_handler;
-#else
         timer_setup(&preorder_ctrl->reord_timer, reord_timeout_handler, 0);
-#endif
         INIT_WORK(&preorder_ctrl->reord_timer_work, reord_timeout_worker);
     }
 
@@ -1435,7 +1336,7 @@ int reord_flush_tid(struct aicwf_rx_priv *rx_priv, struct sk_buff *skb, u8 tid)
     preorder_ctrl->enable = false;
     spin_unlock_irqrestore(&preorder_ctrl->reord_list_lock, flags);
     if (timer_pending(&preorder_ctrl->reord_timer))
-        ret = del_timer_sync(&preorder_ctrl->reord_timer);
+        ret = timer_delete_sync(&preorder_ctrl->reord_timer);
     cancel_work_sync(&preorder_ctrl->reord_timer_work);
 
     return 0;
@@ -1461,7 +1362,7 @@ void reord_deinit_sta(struct aicwf_rx_priv* rx_priv, struct reord_ctrl_info *reo
 		if(preorder_ctrl->enable){
 			preorder_ctrl->enable = false;
 	        if (timer_pending(&preorder_ctrl->reord_timer)) {
-	            ret = del_timer_sync(&preorder_ctrl->reord_timer);
+	            ret = timer_delete_sync(&preorder_ctrl->reord_timer);
 	        }
 	        cancel_work_sync(&preorder_ctrl->reord_timer_work);
 		}
@@ -1502,13 +1403,9 @@ int reord_single_frame_ind(struct aicwf_rx_priv *rx_priv, struct recv_msdu *prfr
 
     if (1) {//(check_fwstate(pmlmepriv, WIFI_STATION_STATE | WIFI_ADHOC_STATE) == _TRUE) {
         /* Insert NAT2.5 RX here! */
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-        br_port = rwnx_vif->ndev->br_port;
-#else
         rcu_read_lock();
         br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
         rcu_read_unlock();
-#endif
 
         if (br_port) {
             int nat25_handle_frame(struct rwnx_vif *vif, struct sk_buff *skb);
@@ -1613,15 +1510,7 @@ int reord_single_frame_ind(struct aicwf_rx_priv *rx_priv, struct recv_msdu *prfr
         * If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
         * * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
         */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
         netif_rx_ni(rx_skb);
-#else
-        ulong flags;
-        netif_rx(rx_skb);
-        local_irq_save(flags);
-        RAISE_RX_SOFTIRQ();
-        local_irq_restore(flags);
-#endif
         }
 #endif//CONFIG_RX_NETIF_RECV_SKB
     }
@@ -1702,17 +1591,9 @@ int reorder_timeout = REORDER_UPDATE_TIME;
 module_param(reorder_timeout, int, 0660);
 
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
-void reord_timeout_handler (ulong data)
-#else
 void reord_timeout_handler (struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
-	struct reord_ctrl *preorder_ctrl = (struct reord_ctrl *)data;
-#else
-	struct reord_ctrl *preorder_ctrl = from_timer(preorder_ctrl, t, reord_timer);
-#endif
+	struct reord_ctrl *preorder_ctrl = timer_container_of(preorder_ctrl, t, reord_timer);
 
 	AICWFDBG(LOGTRACE, "%s Enter \r\n", __func__);
 
@@ -1871,7 +1752,7 @@ int reord_process_unit(struct recv_msdu *pframe, struct aicwf_rx_priv *rx_priv, 
         }
     } else {
 		if(timer_pending(&preorder_ctrl->reord_timer)) {
-	        	ret = del_timer(&preorder_ctrl->reord_timer);
+	        	ret = timer_delete(&preorder_ctrl->reord_timer);
 		}
     }
 
@@ -2026,18 +1907,10 @@ void rwnx_rxdata_process_amsdu(struct rwnx_hw *rwnx_hw, struct sk_buff *skb, u8 
     }
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void defrag_timeout_cb(ulong data)
-#else
 void defrag_timeout_cb(struct timer_list *t)
-#endif
 {
 	struct defrag_ctrl_info *defrag_ctrl = NULL;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	defrag_ctrl = (struct defrag_ctrl_info *)data;
-#else
-	defrag_ctrl = from_timer(defrag_ctrl, t, defrag_timer);
-#endif
+	defrag_ctrl = timer_container_of(defrag_ctrl, t, defrag_timer);
 
 	printk("%s:%p\r\n", __func__, defrag_ctrl);
 	spin_lock_bh(&defrag_ctrl->rwnx_hw->defrag_lock);
@@ -2202,7 +2075,7 @@ check_len_update:
         hdr = (struct ieee80211_hdr *)(skb->data + msdu_offset);
         rwnx_vif = rwnx_rx_get_vif(rwnx_hw, hw_rxhdr->flags_vif_idx);
         if (rwnx_vif) {
-            cfg80211_rx_spurious_frame(rwnx_vif->ndev, hdr->addr2, GFP_ATOMIC);
+            cfg80211_rx_spurious_frame(rwnx_vif->ndev, hdr->addr2, -1, GFP_ATOMIC);
         }
         goto end;
     }
@@ -2345,13 +2218,7 @@ check_len_update:
 						//printk("first:%p,%p,%p,%p,%p, %d,%d\r\n", defrag_info, defrag_info->skb, defrag_info->skb->head, defrag_info->skb->tail, defrag_info->skb->end, defrag_info->frm_len, skb->len);
 						list_add_tail(&defrag_info->list, &rwnx_hw->defrag_list);
 						spin_unlock_bh(&rwnx_hw->defrag_lock);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-						init_timer(&defrag_info->defrag_timer);
-						defrag_info->defrag_timer.data = (unsigned long)defrag_info;
-						defrag_info->defrag_timer.function = defrag_timeout_cb;
-#else
 						timer_setup(&defrag_info->defrag_timer, defrag_timeout_cb, 0);
-#endif
 						ret = mod_timer(&defrag_info->defrag_timer, jiffies + msecs_to_jiffies(DEFRAG_MAX_WAIT));
 						dev_kfree_skb(skb);
 						return 0;
@@ -2397,7 +2264,7 @@ check_len_update:
 							skb_tmp = defrag_info->skb;
 							list_del_init(&defrag_info->list);
 							if (timer_pending(&defrag_info->defrag_timer)) {
-								ret = del_timer(&defrag_info->defrag_timer);
+								ret = timer_delete(&defrag_info->defrag_timer);
 							}
 							kfree(defrag_info);
 							spin_unlock_bh(&rwnx_hw->defrag_lock);
@@ -2449,7 +2316,7 @@ check_len_update:
 
                 if (hw_rxhdr->flags_is_4addr && !rwnx_vif->use_4addr) {
                     cfg80211_rx_unexpected_4addr_frame(rwnx_vif->ndev,
-                                                       sta->mac_addr, GFP_ATOMIC);
+                                                       sta->mac_addr, -1, GFP_ATOMIC);
                 }
             }
 

@@ -373,36 +373,13 @@ int reord_need_check(struct reord_ctrl *preorder_ctrl, u16 seq_num);
 int reord_rxframe_enqueue(struct reord_ctrl *preorder_ctrl, struct recv_msdu *prframe);
 void reord_timeout_worker(struct work_struct *work);
 int reord_single_frame_ind(struct aicwf_rx_priv *rx_priv, struct recv_msdu *prframe);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
-void reord_timeout_handler (ulong data);
-#else
 void reord_timeout_handler (struct timer_list *t);
-#endif
 
 #endif
 void rwnx_rxdata_process_amsdu(struct rwnx_hw *rwnx_hw, struct sk_buff *skb, u8 vif_idx,
                                         struct sk_buff_head *list);
 
 #ifdef CONFIG_HE_FOR_OLD_KERNEL
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 4, 197)
-struct element {
-    u8 id;
-    u8 datalen;
-    u8 data[];
-};
-/* element iteration helpers */
-#define for_each_element(_elem, _data, _datalen)			\
-	for (_elem = (const struct element *)(_data);			\
-	     (const u8 *)(_data) + (_datalen) - (const u8 *)_elem >=	\
-		(int)sizeof(*_elem) &&					\
-	     (const u8 *)(_data) + (_datalen) - (const u8 *)_elem >=	\
-		(int)sizeof(*_elem) + _elem->datalen;			\
-	     _elem = (const struct element *)(_elem->data + _elem->datalen))
-
-#define for_each_element_id(element, _id, data, datalen)		\
-	for_each_element(element, data, datalen)			\
-		if (element->id == (_id))
-#endif
 #endif
 
 #endif /* _RWNX_RX_H_ */

@@ -1,21 +1,8 @@
 #include <linux/nl80211.h>
 #include <net/cfg80211.h>
-#include <linux/version.h>
 
 //#include "regdb.h"
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
-#define REG_RULE_EXT(start, end, bw, gain, eirp, dfs_cac, reg_flags) \
-{							\
-	.freq_range.start_freq_khz = MHZ_TO_KHZ(start),	\
-	.freq_range.end_freq_khz = MHZ_TO_KHZ(end),	\
-	.freq_range.max_bandwidth_khz = MHZ_TO_KHZ(bw),	\
-	.power_rule.max_antenna_gain = DBI_TO_MBI(gain),\
-	.power_rule.max_eirp = DBM_TO_MBM(eirp),	\
-	.flags = reg_flags,				\
-}
-#define NL80211_RRF_AUTO_BW 0
-#endif
 
 static const struct ieee80211_regdomain regdom_00 = {
 	.n_reg_rules = 2,
