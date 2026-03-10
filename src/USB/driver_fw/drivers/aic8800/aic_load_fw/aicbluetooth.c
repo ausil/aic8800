@@ -258,13 +258,15 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name, struct device *dev
 	void *buffer=NULL;
 	MD5_CTX md5;
 	unsigned char decrypt[16];
+	char fw_name[256];
 	int size = 0;
 	int ret = 0;
 
-	printk("%s: request firmware = %s \n", __func__ ,name);
+	snprintf(fw_name, sizeof(fw_name), "aic8800/usb/%s", name);
+	printk("%s: request firmware = %s \n", __func__, fw_name);
 
 
-	ret = request_firmware(&fw, name, NULL);
+	ret = request_firmware(&fw, fw_name, NULL);
 	
 	if (ret < 0) {
 		printk("Load %s fail\n", name);
