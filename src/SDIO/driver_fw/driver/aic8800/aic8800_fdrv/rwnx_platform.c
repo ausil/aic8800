@@ -593,7 +593,7 @@ static int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *dev
 	int size = 0;
 	int ret = 0;
 
-	snprintf(fw_name, sizeof(fw_name), "aic8800/%s", name);
+	snprintf(fw_name, sizeof(fw_name), "aic8800/sdio/%s", name);
 	printk("%s: request firmware = %s\n", __func__, fw_name);
 
 	ret = request_firmware(&fw, fw_name, device);
@@ -1990,7 +1990,7 @@ static int aic_load_firmware(u32 **fw_buf, const char *name, struct device *devi
 	int size = 0;
 	int ret = 0;
 
-	snprintf(fw_name, sizeof(fw_name), "aic8800/%s", name);
+	snprintf(fw_name, sizeof(fw_name), "aic8800/sdio/%s", name);
 	AICWFDBG(LOGINFO, "%s: request firmware = %s\n", __func__, fw_name);
 
 	ret = request_firmware(&fw, fw_name, device);

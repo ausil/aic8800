@@ -1,8 +1,8 @@
-%global modversion 2.0.0
+%global modversion 2.0.1
 
 Name:           aic8800-dkms
 Version:        %{modversion}
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        AIC8800 WiFi/BT drivers (DKMS)
 License:        GPL-2.0-only
 URL:            https://github.com/radxa-pkg/aic8800
@@ -68,11 +68,11 @@ cp -a sdio-driver/* %{buildroot}%{_usrsrc}/aic8800-sdio-%{modversion}/
 install -d %{buildroot}%{_usrsrc}/aic8800-usb-%{modversion}
 cp -a usb-driver/* %{buildroot}%{_usrsrc}/aic8800-usb-%{modversion}/
 
-# Firmware (all variants, flat into /lib/firmware/aic8800/)
-install -d %{buildroot}/lib/firmware/aic8800
-for dir in firmware/*/; do
-    install -p -m 644 "$dir"* %{buildroot}/lib/firmware/aic8800/ 2>/dev/null || :
-done
+# Firmware (transport-specific subdirs to avoid SDIO/USB file conflicts)
+install -d %{buildroot}/lib/firmware/aic8800/sdio
+install -d %{buildroot}/lib/firmware/aic8800/usb
+install -p -m 644 firmware/sdio/* %{buildroot}/lib/firmware/aic8800/sdio/
+install -p -m 644 firmware/usb/* %{buildroot}/lib/firmware/aic8800/usb/
 
 # --- SDIO scriptlets ---
 %post -n aic8800-sdio-dkms
@@ -99,9 +99,15 @@ dkms remove -m aic8800-usb -v %{modversion} --all --rpm_safe_upgrade || :
 %{_usrsrc}/aic8800-usb-%{modversion}/
 
 %files -n aic8800-firmware
-/lib/firmware/aic8800/
+%dir /lib/firmware/aic8800
+/lib/firmware/aic8800/sdio/
+/lib/firmware/aic8800/usb/
 
 %changelog
+* Mon Mar 09 2026 Dennis <dennis@ausil.us> - 2.0.1-1
+- Fix SDIO/USB firmware file collision (transport-specific subdirs)
+- Firmware now in /lib/firmware/aic8800/sdio/ and /lib/firmware/aic8800/usb/
+
 * Mon Mar 09 2026 Dennis <dennis@ausil.us> - 2.0.0-2
 - Fix in_irq() removal in kernel 6.19 (use in_hardirq())
 

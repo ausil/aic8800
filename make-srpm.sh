@@ -2,7 +2,7 @@
 # Build source RPM for COPR submission
 set -euo pipefail
 
-VERSION=2.0.0
+VERSION=2.0.1
 NAME=aic8800-dkms
 TARDIR="${NAME}-${VERSION}"
 
@@ -27,16 +27,18 @@ for tree in sdio-driver usb-driver; do
         | xargs rm -rf 2>/dev/null || :
 done
 
-# Copy firmware from all chip variants (SDIO + USB)
+# Copy SDIO firmware
+mkdir -p "$WORKDIR/$TARDIR/firmware/sdio"
+cp -a "$SCRIPT_DIR/src/SDIO/driver_fw/fw/aic8800D80/"* "$WORKDIR/$TARDIR/firmware/sdio/"
+
+# Copy USB firmware (multiple chip variants)
+mkdir -p "$WORKDIR/$TARDIR/firmware/usb"
 for fwdir in \
-    "$SCRIPT_DIR/src/SDIO/driver_fw/fw/aic8800D80" \
     "$SCRIPT_DIR/src/USB/driver_fw/fw/aic8800" \
     "$SCRIPT_DIR/src/USB/driver_fw/fw/aic8800D80" \
     "$SCRIPT_DIR/src/USB/driver_fw/fw/aic8800D80X2" \
     "$SCRIPT_DIR/src/USB/driver_fw/fw/aic8800DC"; do
-    variant=$(basename "$fwdir")
-    mkdir -p "$WORKDIR/$TARDIR/firmware/$variant"
-    cp -a "$fwdir/"* "$WORKDIR/$TARDIR/firmware/$variant/"
+    cp -a "$fwdir/"* "$WORKDIR/$TARDIR/firmware/usb/"
 done
 
 # Create tarball
