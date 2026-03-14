@@ -1,4 +1,4 @@
-%global modversion 2.1.0
+%global modversion 2.1.1
 
 Name:           aic8800-dkms
 Version:        %{modversion}
@@ -140,6 +140,9 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Sat Mar 14 2026 Dennis <dennis@ausil.us> - 2.1.1-1
+- Default debug log level to LOGERROR only (suppress INFO/DEBUG/TRACE/FW noise)
+
 * Fri Mar 13 2026 Dennis <dennis@ausil.us> - 2.1.0-1
 - Add PCIe driver support (aic8800-pcie-dkms subpackage)
 - Add PCIe firmware to aic8800-firmware
