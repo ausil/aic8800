@@ -1588,7 +1588,7 @@ static void aicwf_sdio_bus_pwrctl(struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 	struct aic_sdio_dev *sdiodev = (struct aic_sdio_dev *) data;
 #else
-	struct aic_sdio_dev *sdiodev = from_timer(sdiodev, t, timer);
+	struct aic_sdio_dev *sdiodev = timer_container_of(sdiodev, t, timer);
 #endif
 
 	if (sdiodev->bus_if->state == BUS_DOWN_ST) {
@@ -1772,7 +1772,7 @@ void aicwf_sdio_pwrctl_timer(struct aic_sdio_dev *sdiodev, uint duration)
 	spin_lock_bh(&sdiodev->pwrctl_lock);
 	if (!duration) {
 		if (timer_pending(&sdiodev->timer))
-			del_timer_sync(&sdiodev->timer);
+			timer_delete_sync(&sdiodev->timer);
 	} else {
 		sdiodev->active_duration = duration;
 		timeout = msecs_to_jiffies(sdiodev->active_duration);
@@ -2027,7 +2027,6 @@ void *aicwf_sdio_bus_init(struct aic_sdio_dev *sdiodev)
 
 #if defined(CONFIG_SDIO_PWRCTRL)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	init_timer(&sdiodev->timer);
 	sdiodev->timer.data = (ulong) sdiodev;
 	sdiodev->timer.function = aicwf_sdio_bus_pwrctl;
 #else
