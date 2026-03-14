@@ -940,7 +940,7 @@ static inline int rwnx_rx_sm_connect_ind(struct rwnx_hw *rwnx_hw,
 			cfg80211_disconnected(dev, 0, NULL, 0,1, GFP_ATOMIC);
 			rwnx_set_conn_state(rwnx_vif, &rwnx_vif->drv_conn_state, (int)RWNX_DRV_STATUS_DISCONNECTED);
 			rwnx_external_auth_disable(rwnx_vif);
-        }else{        
+        }else{
     		struct cfg80211_roam_info info;
     		memset(&info, 0, sizeof(info));
             if (rwnx_vif->ch_index < NX_CHAN_CTXT_CNT)
@@ -951,20 +951,6 @@ static inline int rwnx_rx_sm_connect_ind(struct rwnx_hw *rwnx_hw,
     		info.resp_ie = rsp_ie;
     		info.resp_ie_len = ind->assoc_rsp_ie_len;
     		cfg80211_roamed(dev, &info, GFP_ATOMIC);
-#else
-    		chan = ieee80211_get_channel(rwnx_hw->wiphy, ind->center_freq);
-    		cfg80211_roamed(dev
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39) || defined(COMPAT_KERNEL_RELEASE)
-    			, chan
-#endif
-    			, (const u8 *)ind->bssid.array
-    			, req_ie
-    			, ind->assoc_req_ie_len
-    			, rsp_ie
-    			, ind->assoc_rsp_ie_len
-    			, GFP_ATOMIC);
-
-#endif /*LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)*/
 			rwnx_set_conn_state(rwnx_vif, &rwnx_vif->drv_conn_state, (int)RWNX_DRV_STATUS_CONNECTED);
     	}
         rwnx_vif->sta.is_roam = false;

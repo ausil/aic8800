@@ -101,6 +101,7 @@
 
 
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 #define IEEE80211_RADIOTAP_VHT_FLAG_STBC                        0x01
 #define IEEE80211_RADIOTAP_VHT_FLAG_SGI                         0x04
 

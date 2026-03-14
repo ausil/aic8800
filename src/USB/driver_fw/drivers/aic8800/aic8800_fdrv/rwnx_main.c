@@ -1898,17 +1898,8 @@ static struct rwnx_vif *rwnx_interface_add(struct rwnx_hw *rwnx_hw,
 			mac_addr[0] |= 0x02;
 			mac_addr[0] ^= (vif_idx << 2);
 		}
-		//memcpy(ndev->dev_addr, mac_addr, ETH_ALEN);
 		eth_hw_addr_set(ndev, mac_addr);
 		memcpy(vif->wdev.address, mac_addr, ETH_ALEN);
-#else
-		memcpy(ndev->dev_addr, rwnx_hw->wiphy->perm_addr, ETH_ALEN);
-		if (vif_idx > 0) {
-			ndev->dev_addr[0] |= 0x02;
-			ndev->dev_addr[0] ^= (vif_idx << 2);
-		}
-		memcpy(vif->wdev.address, ndev->dev_addr, ETH_ALEN);
-#endif
 	}
 
 
@@ -4273,6 +4264,9 @@ static int rwnx_cfg80211_get_tx_power(struct wiphy *wiphy,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
  struct wireless_dev *wdev,
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 17, 0)
+	int radio_idx, unsigned int link_id,
+#endif
 	int *mbm)
 {
     #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
@@ -5321,17 +5315,6 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
         phymode_local = PHYMODE_AX;
         //printk("phyrate: %d,%d,%d,%d\n", sinfo->txrate.nss - 1, rate_info->giAndPreTypeTx, rate_info->bwTx, sinfo->txrate.mcs);
 		break;
-#else
-	case FORMATMOD_HE_MU:
-	case FORMATMOD_HE_SU:
-	case FORMATMOD_HE_ER:
-		sinfo->txrate.flags = RATE_INFO_FLAGS_VHT_MCS;
-		sinfo->txrate.mcs = ((rate_info->mcsIndexTx & 0xF) > 9 ? 9 : (rate_info->mcsIndexTx & 0xF));
-        sinfo->txrate.nss = ((rate_info->mcsIndexTx >> 4) & 0x7) + 1;
-        tx_phyrate_local = he_mcs_map_to_rate[sinfo->txrate.nss - 1][rate_info->giAndPreTypeTx][rate_info->bwTx][sinfo->txrate.mcs];
-        phymode_local = PHYMODE_AX;
-		break;
-#endif
 	default:
 		return -EINVAL;
 	}
@@ -5342,7 +5325,6 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
         *tx_phyrate = tx_phyrate_local;
         AICWFDBG(LOGINFO, "phyrate=%d\n", *tx_phyrate);
     }
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 	switch (rate_info->bwTx) {
 	case PHY_CHNL_BW_20:
 		sinfo->txrate.bw = RATE_INFO_BW_20;
@@ -5370,7 +5352,6 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
 	sinfo->rx_packets = vif->net_stats.rx_packets;
 	sinfo->signal = (s8)cfm.rssi;
 
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 	switch (rx_vect1->ch_bw) {
 	case PHY_CHNL_BW_20:
 		sinfo->rxrate.bw = RATE_INFO_BW_20;
@@ -5385,14 +5366,9 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
 		sinfo->rxrate.bw = RATE_INFO_BW_160;
 		break;
 	default:
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		sinfo->rxrate.bw = RATE_INFO_BW_HE_RU;
-	#else
-		sinfo->rxrate.bw = RATE_INFO_BW_20;
-	#endif
 		break;
 	}
-	#endif
 
 	switch (rx_vect1->format_mod) {
 	case FORMATMOD_NON_HT:
@@ -5445,16 +5421,6 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
         sinfo->rxrate.nss = rx_vect1->he.nss + 1;
         rx_phyrate_local = he_mcs_map_to_rate[rx_vect1->he.nss][rx_vect1->he.gi_type][rx_vect1->ch_bw][sinfo->rxrate.mcs];
 		break;
-#else
-	//kernel not support he
-	case FORMATMOD_HE_MU:
-	case FORMATMOD_HE_SU:
-	case FORMATMOD_HE_ER:
-		sinfo->rxrate.flags = RATE_INFO_FLAGS_VHT_MCS;
-		sinfo->rxrate.mcs = (rx_vect1->he.mcs > 9 ? 9 : rx_vect1->he.mcs);
-        sinfo->rxrate.nss = rx_vect1->he.nss + 1;
-		break;
-#endif
 	default:
 		return -EINVAL;
 	}

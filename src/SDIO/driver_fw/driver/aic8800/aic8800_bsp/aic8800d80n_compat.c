@@ -1,5 +1,6 @@
 #include "aic8800d80n_compat.h"
 #include "aic_bsp_export.h"
+#include <linux/vmalloc.h>
 
 #define RWNX_MAC_FW_RF_BASE_NAME_8800D80N   "lmacfw_rf_8800d80n.bin"
 #define RWNX_MAC_FW_CINIT_NAME_8800D80N_U02 "fmacfw_cinit_8800d80n_u02.bin"

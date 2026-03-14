@@ -1382,10 +1382,6 @@ static int aic_priv_cmd_country_set(struct rwnx_hw *rwnx_hw, int argc,
 
 	ret = regulatory_set_wiphy_regd(
 		rwnx_hw->wiphy, regdomain);
-#else
-	wiphy_apply_custom_regulatory(
-		rwnx_hw->wiphy, regdomain);
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0) */
 
 #ifdef CONFIG_RADAR_OR_IR_DETECT
 	rwnx_radar_set_domain(&rwnx_hw->radar, regdomain->dfs_region);

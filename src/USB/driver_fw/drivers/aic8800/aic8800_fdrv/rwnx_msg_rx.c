@@ -1016,7 +1016,7 @@ static inline int rwnx_rx_sm_connect_ind(struct rwnx_hw *rwnx_hw,
         }else{
             struct cfg80211_roam_info info;
             memset(&info, 0, sizeof(info));
-            
+
 			if (rwnx_vif->ch_index < NX_CHAN_CTXT_CNT)
     			info.links[0].channel = rwnx_hw->chanctx_table[rwnx_vif->ch_index].chan_def.chan;
 			info.links[0].bssid = (const u8 *)ind->bssid.array;;
@@ -1027,20 +1027,6 @@ static inline int rwnx_rx_sm_connect_ind(struct rwnx_hw *rwnx_hw,
             info.resp_ie_len = ind->assoc_rsp_ie_len;
             AICWFDBG(LOGINFO, "%s roaming success to notify roam \r\n", __func__);
             cfg80211_roamed(dev, &info, GFP_ATOMIC);
-#else
-            chan = ieee80211_get_channel(rwnx_hw->wiphy, ind->center_freq);
-            AICWFDBG(LOGINFO, "%s roaming success to notify roam \r\n", __func__);
-            cfg80211_roamed(dev
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39) || defined(COMPAT_KERNEL_RELEASE)
-                , chan
-#endif
-                , (const u8 *)ind->bssid.array
-                , req_ie
-                , ind->assoc_req_ie_len
-                , rsp_ie
-                , ind->assoc_rsp_ie_len
-                , GFP_ATOMIC);
-#endif /*LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)*/
 			rwnx_set_conn_state(rwnx_vif, &rwnx_vif->drv_conn_state, (int)RWNX_DRV_STATUS_CONNECTED);
 		}
         rwnx_vif->sta.is_roam = false;

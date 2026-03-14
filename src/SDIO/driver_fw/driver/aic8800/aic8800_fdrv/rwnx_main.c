@@ -769,15 +769,7 @@ static void rwnx_csa_finish(struct work_struct *ws)
 		} else
 			rwnx_txq_vif_stop(vif, RWNX_TXQ_STOP_CHAN, rwnx_hw);
 		spin_unlock_bh(&rwnx_hw->cb_lock);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0))
 		cfg80211_ch_switch_notify(vif->ndev, &csa->chandef, 0);
-#elif (LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION3)
-		cfg80211_ch_switch_notify(vif->ndev, &csa->chandef, 0, 0);
-#elif (LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION)
-		cfg80211_ch_switch_notify(vif->ndev, &csa->chandef, 0);
-#else
-		cfg80211_ch_switch_notify(vif->ndev, &csa->chandef);
-#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0))
 		wiphy_unlock(rwnx_hw->wiphy);
 #else
@@ -1621,23 +1613,14 @@ static struct rwnx_vif *rwnx_interface_add(struct rwnx_hw *rwnx_hw,
 		memcpy((void *)ndev->dev_addr, (const void *)params->macaddr, ETH_ALEN);
 		memcpy((void *)vif->wdev.address, (const void *)params->macaddr, ETH_ALEN);
 	} else {
-			unsigned char mac_addr[6];
+		unsigned char mac_addr[6];
 			memcpy(mac_addr, rwnx_hw->wiphy->perm_addr, ETH_ALEN);
 			if (vif_idx > 0) {
 				mac_addr[0] |= 0x02;
 				mac_addr[0] ^= (vif_idx << 2);
 			}
-			//memcpy(ndev->dev_addr, mac_addr, ETH_ALEN);
 			eth_hw_addr_set(ndev, mac_addr);
 			memcpy(vif->wdev.address, mac_addr, ETH_ALEN);
-#else
-			memcpy(ndev->dev_addr, rwnx_hw->wiphy->perm_addr, ETH_ALEN);
-			if (vif_idx > 0) {
-				ndev->dev_addr[0] |= 0x02;
-				ndev->dev_addr[0] ^= (vif_idx << 2);
-			}
-			memcpy(vif->wdev.address, ndev->dev_addr, ETH_ALEN);
-#endif
 
 	}
 
@@ -4185,9 +4168,6 @@ static int
 rwnx_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 	struct net_device *dev,
 	const u8 *peer,
-#else
-	u8 *peer,
-#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
 	int link_id,
 #endif
@@ -4557,7 +4537,6 @@ static int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
 					 BIT(NL80211_STA_INFO_SIGNAL)        |
 					 BIT(NL80211_STA_INFO_RX_BITRATE)	 |
 					 BIT(NL80211_STA_INFO_TX_FAILED));
-#endif
 
 	return 0;
 }

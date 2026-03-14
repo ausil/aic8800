@@ -1322,7 +1322,6 @@ static void rwnx_set_he_capa(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 	he_cap->he_cap_elem.phy_cap_info[8] |= IEEE80211_HE_PHY_CAP8_20MHZ_IN_40MHZ_HE_PPDU_IN_2G;
 	he_cap->he_cap_elem.phy_cap_info[9] |= IEEE80211_HE_PHY_CAP9_RX_FULL_BW_SU_USING_MU_WITH_COMP_SIGB |
 					IEEE80211_HE_PHY_CAP9_RX_FULL_BW_SU_USING_MU_WITH_NON_COMP_SIGB;
-	#endif
 	if (rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80 ||
 		rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80N ||
 		rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80X2){
@@ -1424,7 +1423,6 @@ static void rwnx_set_he_capa(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 		he_cap->he_cap_elem.phy_cap_info[8] |= IEEE80211_HE_PHY_CAP8_20MHZ_IN_40MHZ_HE_PPDU_IN_2G;
 		he_cap->he_cap_elem.phy_cap_info[9] |= IEEE80211_HE_PHY_CAP9_RX_FULL_BW_SU_USING_MU_WITH_COMP_SIGB |
 											   IEEE80211_HE_PHY_CAP9_RX_FULL_BW_SU_USING_MU_WITH_NON_COMP_SIGB;
-		#endif
 		if (rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80 ||
 			rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80N ||
 			rwnx_hw->sdiodev->chipid == PRODUCT_ID_AIC8800D80X2)
@@ -1655,7 +1653,7 @@ void rwnx_custregd(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 // For older kernel version, the custom regulatory is applied before the wiphy
 // registration (in rwnx_set_wiphy_params()), so nothing has to be done here
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
 	wiphy->regulatory_flags |= REGULATORY_IGNORE_STALE_KICKOFF;
 #endif
 	if (!rwnx_hw->mod_params->custregd)

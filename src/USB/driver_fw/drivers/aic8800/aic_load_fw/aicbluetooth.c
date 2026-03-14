@@ -269,7 +269,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name, struct device *dev
 	ret = request_firmware(&fw, fw_name, NULL);
 	
 	if (ret < 0) {
-		printk("Load %s fail\n", name);
+		printk("Load %s fail\n", fw_name);
 		release_firmware(fw);
 		return -1;
 	}
