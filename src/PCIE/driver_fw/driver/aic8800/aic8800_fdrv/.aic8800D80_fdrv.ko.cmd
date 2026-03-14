@@ -1,1 +1,0 @@
-savedcmd_aic8800_fdrv/aic8800D80_fdrv.ko := ld -r -EL  -maarch64linux -z norelro -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /usr/src/kernels/6.19.6-300.fc44.aarch64/scripts/module.lds -o aic8800_fdrv/aic8800D80_fdrv.ko aic8800_fdrv/aic8800D80_fdrv.o aic8800_fdrv/aic8800D80_fdrv.mod.o .module-common.o
