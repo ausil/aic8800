@@ -1,4 +1,4 @@
-%global modversion 2.1.1
+%global modversion 2.1.2
 
 Name:           aic8800-dkms
 Version:        %{modversion}
@@ -140,6 +140,11 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Sat Mar 14 2026 Dennis <dennis@ausil.us> - 2.1.2-1
+- Silence operational noise: gate get_txpwr_max, virtual_interface_add, P2P,
+  connect_req, frame_type, deinit/reord_mac, tcp_ack, prealloc prints behind
+  LOGINFO; set DBG_LEVEL=0 in both txrxif headers to suppress sdio_dbg spam
+
 * Sat Mar 14 2026 Dennis <dennis@ausil.us> - 2.1.1-1
 - Default debug log level to LOGERROR only (suppress INFO/DEBUG/TRACE/FW noise)
 

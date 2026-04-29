@@ -3532,7 +3532,7 @@ int rwnx_send_sm_connect_req(struct rwnx_hw *rwnx_hw,
 	if (sme->bssid)
 		memcpy(rwnx_vif->sta.bssid, sme->bssid, ETH_ALEN);
 
-	printk("%s drv_vif_index:%d connect to %s(%d) channel:%d auth_type:%d\r\n",
+	AICWFDBG(LOGINFO, "%s drv_vif_index:%d connect to %s(%d) channel:%d auth_type:%d\n",
 		__func__,
 		rwnx_vif->drv_vif_index,
 		rwnx_vif->sta.ssid,

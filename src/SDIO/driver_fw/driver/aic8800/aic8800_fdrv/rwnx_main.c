@@ -1717,7 +1717,7 @@ static struct wireless_dev *rwnx_virtual_interface_add(struct rwnx_hw *rwnx_hw,
 	int vif_idx = -1;
 	int i;
 
-	printk("rwnx_virtual_interface_add: %d, %s\n", type, name);
+	AICWFDBG(LOGINFO, "rwnx_virtual_interface_add: %d, %s\n", type, name);
 
 	if (type == NL80211_IFTYPE_AP_VLAN) {
 		min_idx = NX_VIRT_DEV_MAX;
@@ -1748,7 +1748,7 @@ static struct wireless_dev *rwnx_virtual_interface_add(struct rwnx_hw *rwnx_hw,
 	wdev->wiphy = rwnx_hw->wiphy;
 	wdev->iftype = type;
 
-	printk("rwnx_virtual_interface_add, ifname=%s, wdev=%p, vif_idx=%d\n", name, wdev, vif_idx);
+	AICWFDBG(LOGINFO, "rwnx_virtual_interface_add, ifname=%s, wdev=%p, vif_idx=%d\n", name, wdev, vif_idx);
 
 	#ifndef CONFIG_USE_P2P0
 	vif->is_p2p_vif = 1;
@@ -1778,7 +1778,7 @@ static struct wireless_dev *rwnx_virtual_interface_add(struct rwnx_hw *rwnx_hw,
 	memcpy(vif->wdev.address, rwnx_hw->wiphy->perm_addr, ETH_ALEN);
 	vif->wdev.address[0] |= 0x02;
 	vif->wdev.address[0] ^= (vif_idx << 2);
-	printk("p2p dev addr=%x %x %x %x %x %x\n", vif->wdev.address[0], vif->wdev.address[1], \
+	AICWFDBG(LOGINFO, "p2p dev addr=%x %x %x %x %x %x\n", vif->wdev.address[0], vif->wdev.address[1], \
 		vif->wdev.address[2], vif->wdev.address[3], vif->wdev.address[4], vif->wdev.address[5]);
 
 	return wdev;
@@ -2045,7 +2045,7 @@ static int rwnx_cfgp2p_start_p2p_device(struct wiphy *wiphy, struct wireless_dev
 	int ret = 0;
 
 	//do nothing
-	printk("P2P interface started\n");
+	AICWFDBG(LOGINFO, "P2P interface started\n");
 
 	return ret;
 }
@@ -2828,11 +2828,11 @@ static int rwnx_cfg80211_del_station_compat(struct wiphy *wiphy,
 			}
 			else if ((rwnx_vif->wdev.iftype == NL80211_IFTYPE_AP) || (rwnx_vif->wdev.iftype == NL80211_IFTYPE_P2P_GO)){
 				macaddr = cur->mac_addr;
-				printk("deinit:macaddr:%x,%x,%x,%x,%x,%x\r\n", macaddr[0],macaddr[1],macaddr[2], \
+				AICWFDBG(LOGINFO, "deinit:macaddr:%x,%x,%x,%x,%x,%x\n", macaddr[0],macaddr[1],macaddr[2], \
 									   macaddr[3],macaddr[4],macaddr[5]);
 				list_for_each_entry_safe(reord_info, reord_tmp,
 					&rx_priv->stas_reord_list, list) {
-					printk("reord_mac:%x,%x,%x,%x,%x,%x\r\n", reord_info->mac_addr[0],reord_info->mac_addr[1],reord_info->mac_addr[2], \
+					AICWFDBG(LOGINFO, "reord_mac:%x,%x,%x,%x,%x,%x\n", reord_info->mac_addr[0],reord_info->mac_addr[1],reord_info->mac_addr[2], \
 										   reord_info->mac_addr[3],reord_info->mac_addr[4],reord_info->mac_addr[5]);
 					if (!memcmp(reord_info->mac_addr, macaddr, 6)) {
 						reord_deinit_sta(rx_priv, reord_info);
@@ -2947,11 +2947,11 @@ void apm_staloss_work_process(struct work_struct *work)
 			BUG();//should be other function
 		} else if ((rwnx_vif->wdev.iftype == NL80211_IFTYPE_AP) || (rwnx_vif->wdev.iftype == NL80211_IFTYPE_P2P_GO)) {
 			macaddr = cur->mac_addr;
-			printk("deinit:macaddr:%x,%x,%x,%x,%x,%x\r\n", macaddr[0], macaddr[1], macaddr[2], \
+			AICWFDBG(LOGINFO, "deinit:macaddr:%x,%x,%x,%x,%x,%x\n", macaddr[0], macaddr[1], macaddr[2], \
 								   macaddr[3], macaddr[4], macaddr[5]);
 			list_for_each_entry_safe(reord_info, reord_tmp,
 				&rx_priv->stas_reord_list, list) {
-				printk("reord_mac:%x,%x,%x,%x,%x,%x\r\n", reord_info->mac_addr[0], reord_info->mac_addr[1], reord_info->mac_addr[2], \
+				AICWFDBG(LOGINFO, "reord_mac:%x,%x,%x,%x,%x,%x\n", reord_info->mac_addr[0], reord_info->mac_addr[1], reord_info->mac_addr[2], \
 									   reord_info->mac_addr[3], reord_info->mac_addr[4], reord_info->mac_addr[5]);
 				if (!memcmp(reord_info->mac_addr, macaddr, 6)) {
 					reord_deinit_sta(rx_priv, reord_info);
@@ -4036,7 +4036,7 @@ int rwnx_cfg80211_update_ft_ies(struct wiphy *wiphy,
 							struct net_device *dev,
 							struct cfg80211_update_ft_ies_params *ftie)
 {
-	printk("%s\n", __func__);
+	AICWFDBG(LOGINFO, "%s\n", __func__);
 	return 0;
 }
 

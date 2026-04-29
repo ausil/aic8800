@@ -1,4 +1,5 @@
 #include"aicwf_tcp_ack.h"
+#include "aicwf_debug.h"
 //#include"rwnx_tx.h"
 //#include "aicwf_tcp_ack.h"
 #include"rwnx_defs.h"
@@ -58,7 +59,7 @@ void tcp_ack_init(struct rwnx_hw *priv)
 	struct tcp_ack_info *ack_info;
 	struct tcp_ack_manage *ack_m = &priv->ack_m;
 
-	printk("%s \n",__func__);
+	AICWFDBG(LOGINFO, "%s\n", __func__);
 	memset(ack_m, 0, sizeof(struct tcp_ack_manage));
 	ack_m->priv = priv;
 	spin_lock_init(&ack_m->lock);
@@ -86,7 +87,7 @@ void tcp_ack_deinit(struct rwnx_hw *priv)
 	struct tcp_ack_manage *ack_m = &priv->ack_m;
 	struct msg_buf *drop_msg = NULL;
 
-	printk("%s \n",__func__);
+	AICWFDBG(LOGINFO, "%s\n", __func__);
 	atomic_set(&ack_m->enable, 0);
 
 	for (i = 0; i < TCP_ACK_NUM; i++) {
