@@ -17,5 +17,17 @@
 /*.changes
 /.pc
 
+# Kernel module build outputs
+**/*.o
+**/*.ko
+**/*.mod
+**/*.mod.c
+**/*.mod.o
+**/.*.cmd
+**/modules.order
+**/Module.symvers
+**/.module-common.o
+**/.tmp_versions/
+
 # Output folder
 /out

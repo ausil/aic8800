@@ -90,11 +90,7 @@ int aicwf_bus_init(uint bus_hdrlen, struct device *dev)
     }
     bus_if = dev_get_drvdata(dev);
     #if defined CONFIG_USB_SUPPORT && defined CONFIG_USB_NO_TRANS_DMA_MAP
-    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
     bus_if->cmd_buf = usb_alloc_coherent(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &bus_if->bus_priv.usb->cmd_dma_trans_addr);
-    #else
-    bus_if->cmd_buf = usb_buffer_alloc(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &bus_if->bus_priv.usb->cmd_dma_trans_addr);
-    #endif
     #else
     bus_if->cmd_buf = kzalloc(CMD_BUF_MAX, GFP_KERNEL);
     #endif
@@ -123,13 +119,8 @@ int aicwf_bus_init(uint bus_hdrlen, struct device *dev)
 
 #if 1
 	//waiting for rx/tx thread init finish
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
 	while(bus_if->busrx_thread->__state != TASK_INTERRUPTIBLE ||
 		bus_if->bustx_thread->__state != TASK_INTERRUPTIBLE)
-#else
-	while(bus_if->busrx_thread->state != TASK_INTERRUPTIBLE ||
-		bus_if->bustx_thread->state != TASK_INTERRUPTIBLE)
-#endif
 	{
 		AICWFDBG(LOGINFO, "%s waiting for rx/tx thread init finish \r\n", __func__);
 		msleep(100);
@@ -231,11 +222,7 @@ void aicwf_bus_deinit(struct device *dev)
 
     if (bus_if->cmd_buf) {
         #if defined CONFIG_USB_SUPPORT && defined CONFIG_USB_NO_TRANS_DMA_MAP
-        #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
         usb_free_coherent(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, bus_if->cmd_buf, bus_if->bus_priv.usb->cmd_dma_trans_addr);
-        #else
-        usb_buffer_free(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, bus_if->cmd_buf, bus_if->bus_priv.usb->cmd_dma_trans_addr);
-        #endif
         #else
         kfree(bus_if->cmd_buf);
         #endif

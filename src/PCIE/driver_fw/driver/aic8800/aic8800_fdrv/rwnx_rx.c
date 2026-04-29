@@ -1667,7 +1667,7 @@ check_len_update:
         hdr = (struct ieee80211_hdr *)(skb->data + msdu_offset);
         rwnx_vif = rwnx_rx_get_vif(rwnx_hw, hw_rxhdr->flags_vif_idx);
         if (rwnx_vif) {
-            cfg80211_rx_spurious_frame(rwnx_vif->ndev, hdr->addr2, GFP_ATOMIC);
+            cfg80211_rx_spurious_frame(rwnx_vif->ndev, hdr->addr2, -1, GFP_ATOMIC);
         }
         rwnx_ipc_buf_e2a_sync_back(rwnx_hw, ipc_buf, sync_len);
         rwnx_ipc_rxbuf_repush(rwnx_hw, ipc_buf);
@@ -1715,7 +1715,7 @@ check_len_update:
 
                 if (hw_rxhdr->flags_is_4addr && !rwnx_vif->use_4addr) {
                     cfg80211_rx_unexpected_4addr_frame(rwnx_vif->ndev,
-                                                       sta->mac_addr, GFP_ATOMIC);
+                                                       sta->mac_addr, -1, GFP_ATOMIC);
                 }
             }
 
@@ -1839,7 +1839,6 @@ struct reord_ctrl_info *reord_init_sta(struct aicwf_rx_priv *rx_priv, const u8 *
 		INIT_LIST_HEAD(&preorder_ctrl->reord_list);
 		spin_lock_init(&preorder_ctrl->reord_list_lock);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		init_timer(&preorder_ctrl->reord_timer);
 		preorder_ctrl->reord_timer.data = (ulong) preorder_ctrl;
 		preorder_ctrl->reord_timer.function = reord_timeout_handler;
 #else
@@ -1906,7 +1905,7 @@ int reord_flush_tid(struct aicwf_rx_priv *rx_priv, struct sk_buff *skb, u8 tid)
 	preorder_ctrl->enable = false;
 	spin_unlock_irqrestore(&preorder_ctrl->reord_list_lock, flags);
 	if (timer_pending(&preorder_ctrl->reord_timer))
-		ret = del_timer_sync(&preorder_ctrl->reord_timer);
+		ret = timer_delete_sync(&preorder_ctrl->reord_timer);
 	cancel_work_sync(&preorder_ctrl->reord_timer_work);
 
 	return 0;
@@ -1937,7 +1936,7 @@ void reord_deinit_sta(struct aicwf_rx_priv *rx_priv, struct reord_ctrl_info *reo
 		}
 		spin_unlock_irqrestore(&preorder_ctrl->reord_list_lock, flags);
 		if (timer_pending(&preorder_ctrl->reord_timer)) {
-			ret = del_timer_sync(&preorder_ctrl->reord_timer);
+			ret = timer_delete_sync(&preorder_ctrl->reord_timer);
 		}
 		cancel_work_sync(&preorder_ctrl->reord_timer_work);
 	}
@@ -2122,7 +2121,7 @@ void reord_timeout_handler (struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 	struct reord_ctrl *preorder_ctrl = (struct reord_ctrl *)data;
 #else
-	struct reord_ctrl *preorder_ctrl = from_timer(preorder_ctrl, t, reord_timer);
+	struct reord_ctrl *preorder_ctrl = timer_container_of(preorder_ctrl, t, reord_timer);
 #endif
 
 #if 0
@@ -2269,7 +2268,7 @@ int reord_process_unit(struct aicwf_rx_priv *rx_priv, struct sk_buff *skb, u16 s
 		}
 	} else {
 	if (timer_pending(&preorder_ctrl->reord_timer)) {
-			ret = del_timer(&preorder_ctrl->reord_timer);
+			ret = timer_delete(&preorder_ctrl->reord_timer);
 	}
 	}
 	
@@ -2371,7 +2370,7 @@ void defrag_timeout_cb(struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 	defrag_ctrl = (struct defrag_ctrl_info *)data;
 #else
-	defrag_ctrl = from_timer(defrag_ctrl, t, defrag_timer);
+	defrag_ctrl = timer_container_of(defrag_ctrl, t, defrag_timer);
 #endif
 
 	printk("%s:%p\r\n", __func__, defrag_ctrl);
@@ -2797,7 +2796,6 @@ check_len_update:
 						list_add_tail(&defrag_info->list, &rwnx_hw->defrag_list);
 						spin_unlock_bh(&rwnx_hw->defrag_lock);
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-						init_timer(&defrag_info->defrag_timer);
 						defrag_info->defrag_timer.data = (unsigned long)defrag_info;
 						defrag_info->defrag_timer.function = defrag_timeout_cb;
 #else
@@ -2848,7 +2846,7 @@ check_len_update:
 							skb_tmp = defrag_info->skb;
 							list_del_init(&defrag_info->list);
 							if (timer_pending(&defrag_info->defrag_timer)) {
-								ret = del_timer(&defrag_info->defrag_timer);
+								ret = timer_delete(&defrag_info->defrag_timer);
 							}
 							kfree(defrag_info);
 							spin_unlock_bh(&rwnx_hw->defrag_lock);

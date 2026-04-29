@@ -508,51 +508,7 @@ struct ieee80211_he_mcs_nss_supp {
 
 #define IEEE80211_HE_PPE_THRES_MAX_LEN		25
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-#define WLAN_EID_EXTENSION  255
-/* Element ID Extensions for Element ID 255 */
 
-enum ieee80211_eid_ext {
-	WLAN_EID_EXT_ASSOC_DELAY_INFO = 1,
-	WLAN_EID_EXT_FILS_REQ_PARAMS = 2,
-	WLAN_EID_EXT_FILS_KEY_CONFIRM = 3,
-	WLAN_EID_EXT_FILS_SESSION = 4,
-	WLAN_EID_EXT_FILS_HLP_CONTAINER = 5,
-	WLAN_EID_EXT_FILS_IP_ADDR_ASSIGN = 6,
-	WLAN_EID_EXT_KEY_DELIVERY = 7,
-	WLAN_EID_EXT_FILS_WRAPPED_DATA = 8,
-	WLAN_EID_EXT_FILS_PUBLIC_KEY = 12,
-	WLAN_EID_EXT_FILS_NONCE = 13,
-	WLAN_EID_EXT_FUTURE_CHAN_GUIDANCE = 14,
-
-};
-
-#endif
-
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
-#define WLAN_EID_EXT_HE_CAPABILITY  35
-#define WLAN_EID_EXT_HE_OPERATION  36
-#define WLAN_EID_EXT_UORA  37
-#define WLAN_EID_EXT_HE_MU_EDCA  38
-#define WLAN_EID_EXT_HE_SPR  39
-#define WLAN_EID_EXT_NDP_FEEDBACK_REPORT_PARAMSET  41
-#define WLAN_EID_EXT_BSS_COLOR_CHG_ANN  42
-#define WLAN_EID_EXT_QUIET_TIME_PERIOD_SETUP  43
-#define WLAN_EID_EXT_ESS_REPORT  45
-#define WLAN_EID_EXT_OPS  46
-#define WLAN_EID_EXT_HE_BSS_LOAD  47
-#define WLAN_EID_EXT_MAX_CHANNEL_SWITCH_TIME  52
-#define WLAN_EID_EXT_MULTIPLE_BSSID_CONFIGURATION  55
-#define WLAN_EID_EXT_NON_INHERITANCE  56
-#define WLAN_EID_EXT_KNOWN_BSSID  57
-#define WLAN_EID_EXT_SHORT_SSID_LIST  58
-#define WLAN_EID_EXT_HE_6GHZ_CAPA  59
-#define WLAN_EID_EXT_UL_MU_POWER_CAPA  60
-#define WLAN_EID_EXT_EHT_OPERATION  106
-#define WLAN_EID_EXT_EHT_MULTI_LINK  107
-#define WLAN_EID_EXT_EHT_CAPABILITY  108
-
-#endif
 
 struct ieee80211_sta_he_cap {
 	bool has_he;
@@ -564,26 +520,6 @@ struct ieee80211_sta_he_cap {
 struct ieee80211_sband_iftype_data {
 	u16 types_mask;
 	struct ieee80211_sta_he_cap he_cap;
-};
-#endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
-struct ieee80211_vht_mcs_info {
-	__le16 rx_mcs_map;
-	__le16 rx_highest;
-	__le16 tx_mcs_map;
-	__le16 tx_highest;
-} __packed;
-
-struct ieee80211_vht_cap {
-	__le32 vht_cap_info;
-	struct ieee80211_vht_mcs_info supp_mcs;
-};
-#define WLAN_EID_VHT_CAPABILITY             191
-
-struct ieee80211_sta_vht_cap {
-	bool vht_supported;
-	u32 cap; /* use IEEE80211_VHT_CAP_ */
-	struct ieee80211_vht_mcs_info vht_mcs;
 };
 #endif
 #endif // LMAC_MAC_H_

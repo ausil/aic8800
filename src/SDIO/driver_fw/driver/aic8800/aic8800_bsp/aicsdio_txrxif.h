@@ -28,7 +28,7 @@
 #define DEBUG_DEBUG_LEVEL           1
 #define DEBUG_INFO_LEVEL            2
 
-#define DBG_LEVEL                   DEBUG_DEBUG_LEVEL
+#define DBG_LEVEL                   0
 
 #define txrx_err(fmt, ...)          pr_err("aicbsp: txrx_err:<%s,%d>: " fmt, __func__, __LINE__, ##__VA_ARGS__)
 #define sdio_err(fmt, ...)          pr_err("aicbsp: sdio_err:<%s,%d>: " fmt, __func__, __LINE__, ##__VA_ARGS__)

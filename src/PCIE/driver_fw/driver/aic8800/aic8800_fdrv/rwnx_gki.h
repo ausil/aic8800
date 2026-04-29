@@ -51,8 +51,10 @@ int rwnx_call_usermodehelper(const char *path, char **argv, char **envp, int wai
 
 #else
 
-#define rwnx_cfg80211_rx_spurious_frame           cfg80211_rx_spurious_frame
-#define rwnx_cfg80211_rx_unexpected_4addr_frame   cfg80211_rx_unexpected_4addr_frame
+#define rwnx_cfg80211_rx_spurious_frame(dev, addr, gfp) \
+	cfg80211_rx_spurious_frame(dev, addr, -1, gfp)
+#define rwnx_cfg80211_rx_unexpected_4addr_frame(dev, addr, gfp) \
+	cfg80211_rx_unexpected_4addr_frame(dev, addr, -1, gfp)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 #define rwnx_cfg80211_notify_new_peer_candidate   cfg80211_notify_new_peer_candidate

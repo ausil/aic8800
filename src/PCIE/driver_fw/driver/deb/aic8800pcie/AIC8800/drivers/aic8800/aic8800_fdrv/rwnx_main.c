@@ -509,7 +509,7 @@ static const int rwnx_hwq2uapsd[NL80211_NUM_ACS] = {
 #endif
 
 extern uint8_t scanning;
-int aicwf_dbg_level = LOGERROR|LOGINFO|LOGDEBUG|LOGTRACE;
+int aicwf_dbg_level = LOGERROR;
 module_param(aicwf_dbg_level, int, 0660);
 int testmode = 0;
 int adap_test = 0;

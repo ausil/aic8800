@@ -1618,7 +1618,7 @@ void rwnx_radar_cancel_cac(struct rwnx_radar *radar)
                            &ctxt->chan_def,
                         #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-                           NL80211_RADAR_CAC_FINISHED, GFP_KERNEL, 0);
+                           NL80211_RADAR_CAC_ABORTED, GFP_KERNEL, 0);
 #else
                            NL80211_RADAR_CAC_ABORTED, GFP_KERNEL);
 #endif
