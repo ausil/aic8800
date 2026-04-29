@@ -186,7 +186,7 @@ static void aicwf_netif_timer(struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 		struct aic_pci_dev *pcidev = (struct aic_pci_dev *) data;
 #else
-		struct aic_pci_dev *pcidev = from_timer(pcidev, t, netif_timer);
+		struct aic_pci_dev *pcidev = timer_container_of(pcidev, t, netif_timer);
 #endif
 
 	if (!work_pending(&pcidev->netif_work))
@@ -242,7 +242,7 @@ static void aicwf_temp_ctrl_timer(struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
 	struct aic_pci_dev *pcidev = (struct aic_pci_dev *) data;
 #else
-	struct aic_pci_dev *pcidev = from_timer(pcidev, t, tp_ctrl_timer);
+	struct aic_pci_dev *pcidev = timer_container_of(pcidev, t, tp_ctrl_timer);
 #endif
 
 	if (!work_pending(&pcidev->tp_ctrl_work))
@@ -933,12 +933,12 @@ static int aicwf_pcie_suspend(struct pci_dev *pdev, pm_message_t state)
 	}
 
 #ifdef CONFIG_TEMP_CONTROL
-		del_timer_sync(&rwnx_hw->pcidev->tp_ctrl_timer);
+		timer_delete_sync(&rwnx_hw->pcidev->tp_ctrl_timer);
 		cancel_work_sync(&rwnx_hw->pcidev->tp_ctrl_work);
 	
 		mod_timer(&rwnx_hw->pcidev->tp_ctrl_timer, jiffies + msecs_to_jiffies(TEMP_GET_INTERVAL));
 	
-		del_timer_sync(&rwnx_hw->pcidev->netif_timer);
+		timer_delete_sync(&rwnx_hw->pcidev->netif_timer);
 		cancel_work_sync(&rwnx_hw->pcidev->netif_work);
 #endif
 
@@ -1052,14 +1052,14 @@ void aicwf_pcie_unregister_drv(void)
 		g_rwnx_plat->pcidev->tm_start = 0;
 		if (timer_pending(&g_rwnx_plat->pcidev->tp_ctrl_timer)) {
 			AICWFDBG(LOGINFO, "%s del tp_ctrl_timer\n", __func__);
-			del_timer_sync(&g_rwnx_plat->pcidev->tp_ctrl_timer);
+			timer_delete_sync(&g_rwnx_plat->pcidev->tp_ctrl_timer);
 		}
 		spin_unlock_bh(&g_rwnx_plat->pcidev->tm_lock);
 		cancel_work_sync(&g_rwnx_plat->pcidev->tp_ctrl_work);
 
 		if (timer_pending(&g_rwnx_plat->pcidev->netif_timer)) {
 			AICWFDBG(LOGINFO, "%s del netif_timer\n", __func__);
-			del_timer_sync(&g_rwnx_plat->pcidev->netif_timer);
+			timer_delete_sync(&g_rwnx_plat->pcidev->netif_timer);
 		}
 		cancel_work_sync(&g_rwnx_plat->pcidev->netif_work);
 #endif
@@ -1194,10 +1194,8 @@ int aicwf_pcie_bus_init(struct aic_pci_dev *pciedev)
 
 #ifdef CONFIG_TEMP_CONTROL
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	init_timer(&pciedev->tp_ctrl_timer);
 	pciedev->tp_ctrl_timer.data = (ulong) pciedev;
 	pciedev->tp_ctrl_timer.function = aicwf_temp_ctrl_timer;
-	init_timer(&pciedev->netif_timer);
 	pciedev->netif_timer.data = (ulong) pciedev;
 	pciedev->netif_timer.function = aicwf_netif_timer;
 #else
