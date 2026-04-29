@@ -320,7 +320,7 @@ static int rwnx_send_msg(struct rwnx_hw *rwnx_hw, const void *msg_params,
 
 	//RWNX_DBG(RWNX_FN_ENTRY_STR);
     AICWFDBG(LOGTRACE, "%s (%d)%s reqcfm:%d in_irq:%d in_softirq:%d in_atomic:%d\r\n",
-    __func__, reqid, RWNX_ID2STR(reqid), reqcfm, (int)in_irq(), (int)in_softirq(), (int)in_atomic());
+    __func__, reqid, RWNX_ID2STR(reqid), reqcfm, (int)in_hardirq(), (int)in_softirq(), (int)in_atomic());
 
 
 #ifdef AICWF_USB_SUPPORT
@@ -452,7 +452,7 @@ static int rwnx_send_msg1(struct rwnx_hw *rwnx_hw, const void *msg_params,
 
 //	RWNX_DBG(RWNX_FN_ENTRY_STR);
     printk("%s (%d)%s reqcfm:%d in_irq:%d in_softirq:%d in_atomic:%d\r\n",
-    __func__, reqid, RWNX_ID2STR(reqid), reqcfm, (int)in_irq(), (int)in_softirq(), (int)in_atomic());
+    __func__, reqid, RWNX_ID2STR(reqid), reqcfm, (int)in_hardirq(), (int)in_softirq(), (int)in_atomic());
 
 #ifdef AICWF_SDIO_SUPPORT
 	rwnx_pm_stay_awake(rwnx_hw->sdiodev);

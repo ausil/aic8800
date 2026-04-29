@@ -16,7 +16,6 @@
 
 #include <linux/workqueue.h>
 #include <linux/if_ether.h>
-#include <linux/version.h>
 #include "rwnx_fw_trace.h"
 
 struct rwnx_hw;
@@ -63,20 +62,10 @@ struct rwnx_sta;
     goto err;                                                   \
 } while (0)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
 #define DEBUGFS_ADD_U32(name, parent, ptr, mode) do {           \
 	debugfs_create_u32(#name, mode,                     		\
             parent, ptr);                                       \
 } while (0)
-#else
-#define DEBUGFS_ADD_U32(name, parent, ptr, mode) do {           	\
-		struct dentry *__tmp;										\
-		__tmp = debugfs_create_u32(#name, mode, 					\
-				parent, ptr);										\
-		if (IS_ERR(__tmp) || !__tmp)								\
-		goto err;													\
-	} while (0)
-#endif
 
 
 /* file operation */

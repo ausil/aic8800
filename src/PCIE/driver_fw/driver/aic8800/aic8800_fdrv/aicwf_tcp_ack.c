@@ -115,7 +115,7 @@ void tcp_ack_deinit(struct rwnx_hw *priv)
 		drop_msg = NULL;
 
 		write_seqlock_bh(&ack_m->ack_info[i].seqlock);
-		del_timer(&ack_m->ack_info[i].timer);
+		timer_delete(&ack_m->ack_info[i].timer);
 		drop_msg = ack_m->ack_info[i].msgbuf;
 		ack_m->ack_info[i].msgbuf = NULL;
 		write_sequnlock_bh(&ack_m->ack_info[i].seqlock);
@@ -388,7 +388,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				//printk("%lx \n",ack_info->msgbuf);
 				drop_msg = ack_info->msgbuf;
 				ack_info->msgbuf = NULL;
-				del_timer(&ack_info->timer);
+				timer_delete(&ack_info->timer);
 			}else{
 				//printk("msgbuf is NULL \n");
 			}
@@ -422,7 +422,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				   atomic_read(&ack_m->max_drop_cnt)))) {
 			ack_info->drop_cnt = 0;
 			ack_info->in_send_msg = new_msgbuf;
-			del_timer(&ack_info->timer);
+			timer_delete(&ack_info->timer);
 		} else {
 			ret = 1;
 			ack_info->msgbuf = new_msgbuf;
@@ -486,7 +486,7 @@ int tcp_ack_handle_new(struct msg_buf *new_msgbuf,
 			ack_info->drop_cnt = 0;
 			//send_msg = new_msgbuf;
 			ack_info->in_send_msg = new_msgbuf;
-			del_timer(&ack_info->timer);
+			timer_delete(&ack_info->timer);
 			if(drop_msg) {
 			write_seqlock_bh(&rwnx_hw->txdata_reserved_seqlock);
 			rwnx_hw->txdata_reserved--;
