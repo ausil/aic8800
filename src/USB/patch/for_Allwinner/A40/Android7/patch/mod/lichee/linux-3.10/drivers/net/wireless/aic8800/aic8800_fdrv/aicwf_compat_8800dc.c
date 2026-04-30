@@ -98,7 +98,7 @@ u32 syscfg_tbl_8800dc[][2] = {
 
 u32 patch_tbl_wifisetting[][2] =
 {
-    #if !defined(CONFIG_FPGA_VERIFICATION)
+    #if !(defined(CONFIG_FPGA_VERIFICATION))
     {0x0090, 0x0013FC00}, //rx_ringbuf_start2
     #endif
 #ifdef CONFIG_USB_TX_AGGR
@@ -1926,7 +1926,7 @@ void aicwf_patch_config_8800dc(struct rwnx_hw *rwnx_hw)
             }
         }
 
-        #if !defined(CONFIG_FPGA_VERIFICATION)
+        #if !(defined(CONFIG_FPGA_VERIFICATION))
         ret = rwnx_send_dbg_mem_block_write_req(rwnx_hw, txgain_cfg_addr, txgain_cfg_size, txgain_map);
         if (ret) {
             AICWFDBG(LOGERROR, "txgain upload fail: %x, err:%d\r\n", txgain_cfg_addr, ret);
@@ -2028,7 +2028,7 @@ int aicwf_plat_patch_load_8800dc(struct rwnx_hw *rwnx_hw){
     int ret = 0;
 
     if (testmode == 0) {
-#if !defined(CONFIG_FPGA_VERIFICATION)
+#if !(defined(CONFIG_FPGA_VERIFICATION))
         if (chip_sub_id == 0) {
             ret = rwnx_plat_bin_fw_upload_2(rwnx_hw, ROM_FMAC_PATCH_ADDR, RWNX_MAC_PATCH_NAME2_8800DC);
         } else if (chip_sub_id == 1) {
@@ -2145,13 +2145,7 @@ int aicwf_dpd_result_write_8800dc(void *buf, int buf_len)
 
     fs = get_fs();
     set_fs(KERNEL_DS);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     sum = kernel_write(fp, buf, buf_len, &pos);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
-    sum = kernel_write(fp, (char *)buf, buf_len, pos);
-#else
-    sum = vfs_write(fp, (char *)buf, buf_len, &pos);
-#endif
 
     set_fs(fs);
     __putname(path);

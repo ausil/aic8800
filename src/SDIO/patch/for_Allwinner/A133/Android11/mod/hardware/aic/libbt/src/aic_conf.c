@@ -38,7 +38,7 @@
 int userial_set_port(char *p_conf_name, char *p_conf_value, int param);
 int hw_set_patch_file_path(char *p_conf_name, char *p_conf_value, int param);
 int hw_set_patch_file_name(char *p_conf_name, char *p_conf_value, int param);
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
 int hw_set_patch_settlement_delay(char *p_conf_name, char *p_conf_value, int param);
 #endif
 
@@ -71,7 +71,7 @@ static const conf_entry_t conf_table[] = {
     {"UartPort", userial_set_port, 0},
     {"FwPatchFilePath", hw_set_patch_file_path, 0},
     {"FwPatchFileName", hw_set_patch_file_name, 0},
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
     {"FwPatchSettlementDelay", hw_set_patch_settlement_delay, 0},
 #endif
     {(const char *) NULL, NULL, 0}

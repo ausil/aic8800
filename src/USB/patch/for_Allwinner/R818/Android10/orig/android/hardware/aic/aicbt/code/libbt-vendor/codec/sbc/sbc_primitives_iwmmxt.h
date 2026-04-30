@@ -30,8 +30,7 @@
 
 #include "sbc_primitives.h"
 
-#if defined(__GNUC__) && defined(__IWMMXT__) && \
-		!defined(SBC_HIGH_PRECISION) && (SCALE_OUT_BITS == 15)
+#if (defined(__GNUC__)) && (defined(__IWMMXT__)) && (!(defined(SBC_HIGH_PRECISION))) && (SCALE_OUT_BITS == 15)
 
 #define SBC_BUILD_WITH_IWMMXT_SUPPORT
 

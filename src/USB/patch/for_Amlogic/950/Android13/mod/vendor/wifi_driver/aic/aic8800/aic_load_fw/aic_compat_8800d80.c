@@ -97,7 +97,7 @@ int aicwf_patch_config_8800d80(struct aic_usb_dev *usb_dev)
     u32 rd_patch_addr;
     u32 aic_patch_addr;
     u32 config_base, aic_patch_str_base;
-    #if (NEW_PATCH_BUFFER_MAP)
+    #if NEW_PATCH_BUFFER_MAP
     u32 patch_buff_addr, patch_buff_base, rd_version_addr, rd_version_val;
     #endif
     uint32_t start_addr = 0x001D7000;
@@ -136,7 +136,7 @@ int aicwf_patch_config_8800d80(struct aic_usb_dev *usb_dev)
     AICWFDBG(LOGERROR, "%x=%x\n", rd_patch_addr_cfm.memaddr, rd_patch_addr_cfm.memdata);
     aic_patch_str_base = rd_patch_addr_cfm.memdata;
 
-    #if (NEW_PATCH_BUFFER_MAP)
+    #if NEW_PATCH_BUFFER_MAP
     if (chip_id == CHIP_REV_U01) {
         rd_version_addr = RAM_FMAC_FW_ADDR_8800D80 + 0x01C;
     } else {

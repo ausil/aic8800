@@ -33,13 +33,7 @@ extern atomic_t aicwf_deinit_atomic;
 
 #ifdef CONFIG_TXRX_THREAD_PRIO
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 #include "uapi/linux/sched/types.h"
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
-#include "linux/sched/types.h"
-#else
-#include "linux/sched/rt.h"
-#endif
 
 int bustx_thread_prio = 1;
 module_param(bustx_thread_prio, int, 0);
@@ -221,7 +215,7 @@ static void aicwf_usb_tx_complete(struct urb *urb)
         skb = usb_buf->skb;
         dev_kfree_skb_any(skb);
     }
-    #if !defined CONFIG_USB_NO_TRANS_DMA_MAP
+    #if !(defined CONFIG_USB_NO_TRANS_DMA_MAP)
     else {
         u8 *buf;
         buf = (u8 *)usb_buf->skb;
@@ -1203,11 +1197,7 @@ static void aicwf_usb_free_urb(struct list_head *q, spinlock_t *qlock)
         #if defined CONFIG_USB_NO_TRANS_DMA_MAP
         // free dma buf if needed
         if (usb_buf->data_buf) {
-            #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
             usb_free_coherent(usb_buf->usbdev->udev, DATA_BUF_MAX, usb_buf->data_buf, usb_buf->data_dma_trans_addr);
-            #else
-            usb_buffer_free(usb_buf->usbdev->udev, DATA_BUF_MAX, usb_buf->data_buf, usb_buf->data_dma_trans_addr);
-            #endif
             usb_buf->data_buf = NULL;
             usb_buf->data_dma_trans_addr = 0x0;
         }
@@ -1265,11 +1255,7 @@ static int aicwf_usb_alloc_tx_urb(struct aic_usb_dev *usb_dev)
         #endif
         #if defined CONFIG_USB_NO_TRANS_DMA_MAP
         // alloc dma buf
-        #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
         usb_buf->data_buf = usb_alloc_coherent(usb_dev->udev, DATA_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &usb_buf->data_dma_trans_addr);
-        #else
-        usb_buf->data_buf = usb_buffer_alloc(usb_dev->udev, DATA_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &usb_buf->data_dma_trans_addr);
-        #endif
         if (usb_buf->data_buf == NULL) {
             usb_err("could not allocate tx data dma buf\n");
             goto err;
@@ -1592,11 +1578,7 @@ static void aicwf_usb_cancel_all_urbs_(struct aic_usb_dev *usb_dev)
         #if defined CONFIG_USB_NO_TRANS_DMA_MAP
         // free dma buf if needed
         if (usb_buf->data_buf) {
-            #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
             usb_free_coherent(usb_buf->usbdev->udev, DATA_BUF_MAX, usb_buf->data_buf, usb_buf->data_dma_trans_addr);
-            #else
-            usb_buffer_free(usb_buf->usbdev->udev, DATA_BUF_MAX, usb_buf->data_buf, usb_buf->data_dma_trans_addr);
-            #endif
             usb_buf->data_buf = NULL;
             usb_buf->data_dma_trans_addr = 0x0;
         } else {
@@ -1941,13 +1923,7 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 //For Allwinner
 #ifdef CONFIG_PLATFORM_ALLWINNER
 		int irq_flags;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	hostwake_irq_num = sunxi_wlan_get_oob_irq(&irq_flags, &wakeup_enable);
-#else
-	hostwake_irq_num = sunxi_wlan_get_oob_irq();
-	irq_flags = sunxi_wlan_get_oob_irq_flags();
-	wakeup_enable = 1;
-#endif
 #endif //CONFIG_PLATFORM_ALLWINNER
 
 
@@ -2240,9 +2216,7 @@ static struct usb_driver aicwf_usbdrvr = {
 #else
     .supports_autosuspend = 0,
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
     .disable_hub_initiated_lpm = 1,
-#endif
 };
 
 void aicwf_usb_register(void)

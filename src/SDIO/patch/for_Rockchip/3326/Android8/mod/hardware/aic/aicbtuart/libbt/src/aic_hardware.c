@@ -77,7 +77,7 @@ static pthread_t inotify_pthread_id = -1;
 #define BTHW_DBG FALSE
 #endif
 
-#if (BTHW_DBG == TRUE)
+#if BTHW_DBG == TRUE
 #define BTHWDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define BTHWDBG(param, ...) {}
@@ -182,7 +182,7 @@ enum {
     HW_CFG_DL_FW_PATCH,
     HW_CFG_SET_UART_BAUD_2,
     HW_CFG_SET_BD_ADDR
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
     , HW_CFG_READ_BD_ADDR
 #endif
     ,HW_CFG_WR_RF_MDM_REGS,
@@ -559,7 +559,7 @@ extern uint8_t vnd_local_bd_addr[BD_ADDR_LEN];
 
 static char fw_patchfile_path[256] = FW_PATCHFILE_LOCATION;
 static char fw_patchfile_name[128] = { 0 };
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
 static int fw_patch_settlement_delay = -1;
 #endif
 
@@ -711,7 +711,7 @@ static const fw_settlement_entry_t fw_settlement_table[] = {
  *     And, PCM interface will be set as the default bus format running over I2S/PCM
  *     port.
  */
-#if (defined(SCO_USE_I2S_INTERFACE) && SCO_USE_I2S_INTERFACE == TRUE)
+#if (defined(SCO_USE_I2S_INTERFACE)) && (SCO_USE_I2S_INTERFACE == TRUE)
 static uint8_t sco_bus_interface = SCO_INTERFACE_I2S;
 #else
 static uint8_t sco_bus_interface = SCO_INTERFACE_PCM;
@@ -757,7 +757,7 @@ uint32_t look_up_fw_settlement_delay (void)
 
     if (FW_PATCH_SETTLEMENT_DELAY_MS > 0) {
         ret_value = FW_PATCH_SETTLEMENT_DELAY_MS;
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
     } else if (fw_patch_settlement_delay >= 0) {
         ret_value = fw_patch_settlement_delay;
 #endif
@@ -1035,7 +1035,7 @@ static uint8_t hw_config_set_bdaddr(HC_BT_HDR *p_buf)
     return (retval);
 }
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 /*******************************************************************************
 **
 ** Function         hw_config_read_bdaddr
@@ -1083,7 +1083,7 @@ void hw_config_cback(void *p_mem)
     uint8_t     is_proceeding = FALSE;
     int         i;
     int         delay=100;
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
     const uint8_t null_bdaddr[BD_ADDR_LEN] = {0,0,0,0,0,0};
 #endif
     bool config_success = false;
@@ -1280,7 +1280,7 @@ void hw_config_cback(void *p_mem)
                     line_speed_to_userial_baud(UART_TARGET_BAUD_RATE) \
                 );
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
                 if ((is_proceeding = hw_config_read_bdaddr(p_buf)) == TRUE)
                     break;
 #else
@@ -1358,7 +1358,7 @@ void hw_config_cback(void *p_mem)
                 is_proceeding = hw_aic_bt_pta_en(p_buf);
                 break;
             case HW_CFG_UPDATE_CONFIG_INFO:
-                #if (PCM_SETTING == 1)
+                #if PCM_SETTING == 1
                 is_proceeding = hw_config_set_pcm_param(p_buf);
                 #else
                 is_proceeding = TRUE;
@@ -1375,7 +1375,7 @@ void hw_config_cback(void *p_mem)
                 config_success = true;
                 break;
             #endif
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
             case HW_CFG_READ_BD_ADDR:
                 p_tmp = (char *) (p_evt_buf + 1) + \
                          HCI_EVT_CMD_CMPL_LOCAL_BDADDR_ARRAY;
@@ -1469,7 +1469,7 @@ void hw_lpm_ctrl_cback(void *p_mem)
 }
 
 
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
 /*****************************************************************************
 **   SCO Configuration Static Functions
 *****************************************************************************/
@@ -1887,7 +1887,7 @@ void hw_lpm_set_wake_state(uint8_t wake_assert)
     upio_set(UPIO_BT_WAKE, state, lpm_param.bt_wake_polarity);
 }
 
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
 /*******************************************************************************
 **
 ** Function         hw_sco_config
@@ -2143,7 +2143,7 @@ int hw_set_patch_file_name(char *p_conf_name, char *p_conf_value, int param)
     return 0;
 }
 
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
 /*******************************************************************************
 **
 ** Function        hw_set_patch_settlement_delay
@@ -2165,7 +2165,7 @@ int hw_set_patch_settlement_delay(char *p_conf_name, char *p_conf_value, int par
 **   Sample Codes Section
 *****************************************************************************/
 
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 /*******************************************************************************
 **
 ** Function         hw_epilog_cback

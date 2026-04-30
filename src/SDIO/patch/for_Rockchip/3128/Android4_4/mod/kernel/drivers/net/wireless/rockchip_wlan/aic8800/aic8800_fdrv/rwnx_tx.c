@@ -407,11 +407,7 @@ u16 rwnx_select_txq(struct rwnx_vif *rwnx_vif, struct sk_buff *skb)
 		} else {
 			/* use the data classifier to determine what 802.1d tag the
 			 * data frame has */
-			#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-			skb->priority = cfg80211_classify8021d(skb) & IEEE80211_QOS_CTL_TAG1D_MASK;
-			#else
 			skb->priority = cfg80211_classify8021d(skb, NULL) & IEEE80211_QOS_CTL_TAG1D_MASK;
-			#endif
 		}
 		if (sta->acm)
 			rwnx_downgrade_ac(sta, skb);
@@ -1024,13 +1020,9 @@ int aic_br_client_tx(struct rwnx_vif *vif, struct sk_buff **pskb)
 
 		/* mac_clone_handle_frame(priv, skb); */
 
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-		br_port = vif->ndev->br_port;
-#else   /* (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35)) */
 		rcu_read_lock();
 		br_port = rcu_dereference(vif->ndev->rx_handler_data);
 		rcu_read_unlock();
-#endif /* (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35)) */
 #ifdef BR_SUPPORT_DEBUG
 		printk("SA=%pM, br_mac=%pM, type=0x%x, da[0]=%x, scdb=%pM, vif_type=%d\n", skb->data + MACADDRLEN,  vif->br_mac, *((unsigned short *)(skb->data + MACADDRLEN * 2)),
 			skb->data[0], vif->scdb_mac,RWNX_VIF_TYPE(vif));
@@ -1125,11 +1117,7 @@ int aic_br_client_tx(struct rwnx_vif *vif, struct sk_buff **pskb)
 					printk("%s(): skb_is_nonlinear!!\n", __FUNCTION__);
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 18))
-				res = skb_linearize(skb, GFP_ATOMIC);
-#else	/* (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 18)) */
 				res = skb_linearize(skb);
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 18)) */
 				if (res < 0) {
 					printk("TX DROP: skb_linearize fail!\n");
 					/* goto free_and_stop; */
@@ -1242,13 +1230,9 @@ int intf_tx(struct rwnx_hw *priv,struct msg_buf *msg)
 		 if (1) {//(check_fwstate(&padapter->mlmepriv, WIFI_STATION_STATE | WIFI_ADHOC_STATE) == _TRUE) {
 			 void *br_port = NULL;
 
-	#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-			 br_port = rwnx_vif->ndev->br_port;
-	#else
 			 rcu_read_lock();
 			 br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
 			 rcu_read_unlock();
-	#endif
 
 			 if (br_port) {
 				 s32 res = aic_br_client_tx(rwnx_vif, &skb);
@@ -1448,13 +1432,9 @@ netdev_tx_t rwnx_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		 if (1) {//(check_fwstate(&padapter->mlmepriv, WIFI_STATION_STATE | WIFI_ADHOC_STATE) == _TRUE) {
 			 void *br_port = NULL;
 
-		#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-			 br_port = rwnx_vif->ndev->br_port;
-		#else
 			 rcu_read_lock();
 			 br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
 			 rcu_read_unlock();
-		#endif
 
 			 if (br_port) {
 				 s32 res = aic_br_client_tx(rwnx_vif, &skb);
@@ -1580,22 +1560,9 @@ free:
  * @cookie: updated with a unique value to identify the frame with upper layer
  *
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
 						 struct cfg80211_mgmt_tx_params *params, bool offchan,
 						 u64 *cookie)
-#else
-int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
-						 struct ieee80211_channel *channel, bool offchan,
-						 unsigned int wait, const u8 *buf, size_t len,
-					#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
-						 bool no_cck,
-					#endif
-					#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0))
-						 bool dont_wait_for_ack,
-					#endif
-						 u64 *cookie)
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) */
 {
 	struct rwnx_hw *rwnx_hw = vif->rwnx_hw;
 	struct rwnx_txhdr *txhdr;
@@ -1607,11 +1574,9 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
 	int nx_off_chan_txq_idx = NX_OFF_CHAN_TXQ_IDX;
 	struct rwnx_txq *txq;
 	bool robust;
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 	const u8 *buf = params->buf;
 	size_t len = params->len;
 	bool no_cck = params->no_cck;
-	#endif
 
     if((g_rwnx_plat->sdiodev->chipid == PRODUCT_ID_AIC8801) ||
         ((g_rwnx_plat->sdiodev->chipid == PRODUCT_ID_AIC8800DC ||
@@ -1666,16 +1631,8 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
 	/* Copy the provided data */
 	memcpy(data, buf, frame_len);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 		robust = ieee80211_is_robust_mgmt_frame(skb);
-#else
-		if (skb->len < 25){
-			robust = false;
-		}
-		robust = ieee80211_is_robust_mgmt_frame((void *)skb->data);
-#endif
 
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 	/* Update CSA counter if present */
 	if (unlikely(params->n_csa_offsets) &&
 		vif->wdev.iftype == NL80211_IFTYPE_AP &&
@@ -1687,7 +1644,6 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
 			data[params->csa_offsets[i]] = vif->ap.csa->count;
 		}
 	}
-	#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) */
 
 	/*
 	 * Go back to the beginning of the allocated data area

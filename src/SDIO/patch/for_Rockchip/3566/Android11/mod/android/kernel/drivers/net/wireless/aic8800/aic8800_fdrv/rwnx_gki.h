@@ -5,7 +5,7 @@
 #include "net/wireless/core.h"
 #endif
 
-#if IS_ENABLED(CONFIG_GKI_OPT_FEATURES) && IS_ENABLED(CONFIG_ANDROID) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+#if (IS_ENABLED(CONFIG_GKI_OPT_FEATURES)) && (IS_ENABLED(CONFIG_ANDROID))
 
 
 bool rwnx_cfg80211_rx_spurious_frame(struct net_device *dev,
@@ -14,11 +14,9 @@ bool rwnx_cfg80211_rx_spurious_frame(struct net_device *dev,
 bool rwnx_cfg80211_rx_unexpected_4addr_frame(struct net_device *dev,
 				const u8 *addr, gfp_t gfp);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 void rwnx_cfg80211_notify_new_peer_candidate(struct net_device *dev, const u8 *addr,
 				const u8 *ie, u8 ie_len,
 				int sig_dbm, gfp_t gfp);
-#endif
 
 void rwnx_cfg80211_report_obss_beacon(struct wiphy *wiphy,
 				const u8 *frame, size_t len,
@@ -50,9 +48,7 @@ int rwnx_call_usermodehelper(const char *path, char **argv, char **envp, int wai
 #define rwnx_cfg80211_rx_spurious_frame           cfg80211_rx_spurious_frame
 #define rwnx_cfg80211_rx_unexpected_4addr_frame   cfg80211_rx_unexpected_4addr_frame
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 #define rwnx_cfg80211_notify_new_peer_candidate   cfg80211_notify_new_peer_candidate
-#endif
 
 #define rwnx_cfg80211_report_obss_beacon          cfg80211_report_obss_beacon
 #define rwnx_cfg80211_ch_switch_notify            cfg80211_ch_switch_notify

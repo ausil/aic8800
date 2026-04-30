@@ -1653,25 +1653,15 @@ void rwnx_custregd(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 // For older kernel version, the custom regulatory is applied before the wiphy
 // registration (in rwnx_set_wiphy_params()), so nothing has to be done here
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
-	wiphy->regulatory_flags |= REGULATORY_IGNORE_STALE_KICKOFF;
-#endif
 	if (!rwnx_hw->mod_params->custregd)
 		return;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 	wiphy->regulatory_flags |= REGULATORY_WIPHY_SELF_MANAGED;
 
 	rtnl_lock();
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
 		if (regulatory_set_wiphy_regd_sync(wiphy, getRegdomainFromRwnxDB(wiphy, default_ccode))){
 			wiphy_err(wiphy, "Failed to set custom regdomain\n");
 		}
-#else
-		if (regulatory_set_wiphy_regd_sync_rtnl(wiphy, getRegdomainFromRwnxDB(wiphy, default_ccode))){
-			wiphy_err(wiphy, "Failed to set custom regdomain\n");
-		}
-#endif
 
 	else{
 		wiphy_err(wiphy,"\n"
@@ -1680,7 +1670,6 @@ void rwnx_custregd(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 				  "*******************************************************\n");
 	}
 	 rtnl_unlock();
-#endif
 
 }
 

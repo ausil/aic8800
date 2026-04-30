@@ -57,7 +57,7 @@ unsigned char indices0[] = {0xad, 0x0, 0x0, 0xc5, 0x0, 0x0, 0x0, 0x0, 0x77, 0x6d
 #define VNDUSERIAL_DBG TRUE
 #endif
 
-#if (VNDUSERIAL_DBG == TRUE)
+#if VNDUSERIAL_DBG == TRUE
 #define VNDUSERIALDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define VNDUSERIALDBG(param, ...) {}
@@ -81,7 +81,7 @@ extern int AIC_btservice_init();
 /******************************************************************************
 **  Local type definitions
 ******************************************************************************/
-#if !defined(EFD_SEMAPHORE)
+#if !(defined(EFD_SEMAPHORE))
 #  define EFD_SEMAPHORE (1 << 0)
 #endif
 
@@ -254,7 +254,7 @@ uint8_t userial_to_tcio_baud(uint8_t cfg_baud, uint32_t *baud)
     return TRUE;
 }
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
 /*******************************************************************************
 **
 ** Function        userial_ioctl_init_bt_wake
@@ -464,7 +464,7 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
     tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
 
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
     userial_ioctl_init_bt_wake(vnd_userial.fd);
 #endif
 
@@ -587,7 +587,7 @@ void userial_vendor_close(void)
         return;
 
     if((aicbt_transtype & AICBT_TRANS_UART) && (aicbt_transtype & AICBT_TRANS_H5)) {
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
         /* de-assert bt_wake BEFORE closing port */
         ioctl(vnd_userial.fd, USERIAL_IOCTL_BT_WAKE_DEASSERT, NULL);
 #endif
@@ -670,7 +670,7 @@ void userial_vendor_ioctl(userial_vendor_ioctl_op_t op, void *p_data)
     AIC_UNUSED(p_data);
     switch(op)
     {
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
         case USERIAL_OP_ASSERT_BT_WAKE:
             VNDUSERIALDBG("## userial_vendor_ioctl: Asserting BT_Wake ##");
             ioctl(vnd_userial.fd, USERIAL_IOCTL_BT_WAKE_ASSERT, NULL);

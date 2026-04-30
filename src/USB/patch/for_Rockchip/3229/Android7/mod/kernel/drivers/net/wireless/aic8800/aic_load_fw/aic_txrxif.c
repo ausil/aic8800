@@ -18,9 +18,7 @@
 #include <linux/vmalloc.h>
 #include <linux/version.h>
 #ifdef CONFIG_PLATFORM_UBUNTU
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 10, 0) 
 #include <linux/sched/signal.h>
-#endif
 #endif
 #include "aic_txrxif.h"
 #include "aicbluetooth.h"

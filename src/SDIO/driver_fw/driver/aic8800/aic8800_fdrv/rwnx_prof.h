@@ -75,7 +75,7 @@ enum {
 };
 
 // [LT]For debug purpose only
-#if (0)
+#if 0
 #define SW_PROF_CHAN_CTXT_CFM_HDL_BIT       (21)
 #define SW_PROF_CHAN_CTXT_CFM_BIT           (22)
 #define SW_PROF_CHAN_CTXT_CFM_SWDONE_BIT    (23)

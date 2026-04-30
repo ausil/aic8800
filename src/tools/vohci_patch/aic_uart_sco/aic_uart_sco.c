@@ -237,21 +237,13 @@ static void sco_send_to_alsa_ringbuffer(uint8_t* p_data, int sco_length)
 
 
 //#ifdef CONFIG_SCO_OVER_HCI
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aic_snd_capture_timeout(ulong data)
-#else
 void aic_snd_capture_timeout(struct timer_list *t)
-#endif
 {
 	uint8_t null_data[480];
 	struct uart_sco_data *p_data; 
 	AIC_sco_card_t  *pSCOSnd = p_uart_sco.pSCOSnd;
 	int input_frames_num = 0;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-    p_data = (struct uart_sco_data *)data;
-#else
     p_data = snd_cap_timer.snd_data;
-#endif
     switch(pSCOSnd->capture.channels){
         case 1:
             input_frames_num = snd_cap_timer.snd_sco_length/2;
@@ -275,11 +267,7 @@ void aic_snd_capture_timeout(struct timer_list *t)
 	}
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aic_snd_play_timeout(ulong data)
-#else
 void aic_snd_play_timeout(struct timer_list *t)
-#endif
 {
 	AIC_sco_card_t *pSCOSnd;
 	struct snd_pcm_runtime *runtime;
@@ -288,11 +276,7 @@ void aic_snd_play_timeout(struct timer_list *t)
 	struct uart_sco_data *p_data;
 	int sco_packet_bytes;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-    p_data = (struct uart_sco_data *)data;
-#else
     p_data = snd_cap_timer.snd_data;
-#endif
 	pSCOSnd = p_data->pSCOSnd;
 
 	if(test_bit(USB_PLAYBACK_RUNNING, &pSCOSnd->states)) {
@@ -358,14 +342,8 @@ static int snd_sco_capture_pcm_open(struct snd_pcm_substream * substream)
     memcpy(&substream->runtime->hw, &snd_card_sco_capture_default, sizeof(struct snd_pcm_hardware));
 	pSCOSnd->capture.buffer_pos = 0;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	init_timer(&snd_cap_timer.cap_timer);
-	snd_cap_timer.cap_timer.data = (unsigned long)pSCOSnd->snd_data;
-	snd_cap_timer.cap_timer.function = aic_snd_capture_timeout;
-#else
 	timer_setup(&snd_cap_timer.cap_timer, aic_snd_capture_timeout, 0);
 	snd_cap_timer.snd_data = pSCOSnd->snd_data;
-#endif
     if(check_select_msbc() == CODEC_MSBC ) {
         substream->runtime->hw.rates |= SNDRV_PCM_RATE_16000;
         substream->runtime->hw.rate_max = 16000;
@@ -517,14 +495,8 @@ static int snd_sco_playback_pcm_open(struct snd_pcm_substream * substream)
     AIC_sco_card_t *pSCOSnd = substream->private_data;
     int err = 0;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	init_timer(&snd_cap_timer.play_timer);
-	snd_cap_timer.play_timer.data = (unsigned long)pSCOSnd->snd_data;
-	snd_cap_timer.play_timer.function = aic_snd_play_timeout;
-#else
 	timer_setup(&snd_cap_timer.play_timer, aic_snd_play_timeout, 0);
 	snd_cap_timer.snd_data = pSCOSnd->snd_data;
-#endif
 	pSCOSnd->playback.buffer_pos = 0;
 
     printk("%s, rate : %d", __FUNCTION__, substream->runtime->rate);

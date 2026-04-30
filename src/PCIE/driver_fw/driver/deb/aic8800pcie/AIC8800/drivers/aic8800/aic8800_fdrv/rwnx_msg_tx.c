@@ -125,11 +125,7 @@ static inline u8_l get_chan_flags(uint32_t flags)
 {
 	u8_l chan_flags = 0;
 #ifdef RADAR_OR_IR_DETECT
-	#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-	if (flags & IEEE80211_CHAN_PASSIVE_SCAN)
-	#else
 	if (flags & IEEE80211_CHAN_NO_IR)
-	#endif
 		chan_flags |= CHAN_NO_IR;
 	if (flags & IEEE80211_CHAN_RADAR)
 		chan_flags |= CHAN_RADAR;
@@ -714,7 +710,7 @@ int rwnx_send_key_add(struct rwnx_hw *rwnx_hw, u8 vif_idx, u8 sta_idx, bool pair
 	RWNX_DBG("%s: sta_idx:%d key_idx:%d inst_nbr:%d cipher:%d key_len:%d\n", __func__,
 			 key_add_req->sta_idx, key_add_req->key_idx, key_add_req->inst_nbr,
 			 key_add_req->cipher_suite, key_add_req->key.length);
-#if defined(CONFIG_RWNX_DBG) || defined(CONFIG_DYNAMIC_DEBUG)
+#if (defined(CONFIG_RWNX_DBG)) || (defined(CONFIG_DYNAMIC_DEBUG))
 	print_hex_dump_bytes("key: ", DUMP_PREFIX_OFFSET, key_add_req->key.array, key_add_req->key.length);
 #endif
 
@@ -1892,17 +1888,9 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 	struct wiphy *wiphy = rwnx_hw->wiphy;
 
 	struct ieee80211_sta_ht_cap *ht_cap;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 	struct ieee80211_sta_vht_cap *vht_cap;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	struct ieee80211_sta_he_cap const *he_cap = NULL;
-#else
-	#ifdef CONFIG_HE_FOR_OLD_KERNEL
-	struct ieee80211_sta_he_cap const *he_cap;
-	#endif
-#endif
 	uint8_t *ht_mcs;
 	int i;
 
@@ -1912,14 +1900,10 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 
 	if (rwnx_hw->band_5g_support) {
 		ht_cap = &wiphy->bands[NL80211_BAND_5GHZ]->ht_cap;
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 		vht_cap = &wiphy->bands[NL80211_BAND_5GHZ]->vht_cap;
-		#endif
 	} else {
 		ht_cap = &wiphy->bands[NL80211_BAND_2GHZ]->ht_cap;
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 		vht_cap = &wiphy->bands[NL80211_BAND_2GHZ]->vht_cap;
-		#endif
 	}
 	#ifdef CONFIG_VHT_FOR_OLD_KERNEL
     rwnx_vht_capa = vht_cap;
@@ -1937,9 +1921,7 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 
 	/* Set parameters for the ME_CONFIG_REQ message */
 	req->ht_supp = ht_cap->ht_supported;
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 	req->vht_supp = vht_cap->vht_supported;
-	#endif
 	req->ht_cap.ht_capa_info = cpu_to_le16(ht_cap->cap | IEEE80211_HT_CAP_LDPC_CODING);
 	req->ht_cap.a_mpdu_param = ht_cap->ampdu_factor |
 									 (ht_cap->ampdu_density <<
@@ -1950,7 +1932,6 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 	req->ht_cap.tx_beamforming_capa = 0;
 	req->ht_cap.asel_capa = 0;
 
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 	if (req->vht_supp) {
 		req->vht_cap.vht_capa_info = cpu_to_le32(vht_cap->cap);
 		req->vht_cap.rx_highest = cpu_to_le16(vht_cap->vht_mcs.rx_highest);
@@ -1958,14 +1939,10 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 		req->vht_cap.tx_highest = cpu_to_le16(vht_cap->vht_mcs.tx_highest);
 		req->vht_cap.tx_mcs_map = cpu_to_le16(vht_cap->vht_mcs.tx_mcs_map);
 	}
-	#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) || defined(CONFIG_HE_FOR_OLD_KERNEL)
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	if (wiphy->bands[NL80211_BAND_2GHZ]->iftype_data != NULL) {
 		he_cap = &wiphy->bands[NL80211_BAND_2GHZ]->iftype_data->he_cap;
 	//}
-	#endif
 	#if defined(CONFIG_HE_FOR_OLD_KERNEL)
 	if (1) {
 		he_cap = &rwnx_he_capa.he_cap;
@@ -1988,10 +1965,6 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 		}
 		req->he_ul_on = rwnx_hw->mod_params->he_ul_on;
 	}
-#else
-	req->he_supp = false;
-	req->he_ul_on = false;
-#endif
 	req->ps_on = rwnx_hw->mod_params->ps_on;
 	req->dpsm = rwnx_hw->mod_params->dpsm;
 	req->tx_lft = rwnx_hw->mod_params->tx_lft;
@@ -2088,12 +2061,6 @@ int rwnx_send_me_set_control_port_req(struct rwnx_hw *rwnx_hw, bool opened, u8 s
 	return rwnx_send_msg(rwnx_hw, req, 1, ME_SET_CONTROL_PORT_CFM, NULL);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 20, 0))
-struct ieee80211_he_cap_elem_4_19 {
-	u8 mac_cap_info[6];
-	u8 phy_cap_info[11];
-} __packed;
-#endif
 
 int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *params,
 						 const u8 *mac, u8 inst_nbr, struct me_sta_add_cfm *cfm)
@@ -2101,11 +2068,7 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
 
 
 	struct me_sta_add_req *req;
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	u8 *ht_mcs = (u8 *)&params->ht_capa->mcs;
-#else
 	u8 *ht_mcs = (u8 *)&params->link_sta_params.ht_capa->mcs;
-#endif
 	int i;
 	struct rwnx_vif *rwnx_vif = rwnx_hw->vif_table[inst_nbr];
 	#if (defined CONFIG_HE_FOR_OLD_KERNEL) || (defined CONFIG_VHT_FOR_OLD_KERNEL)
@@ -2129,30 +2092,17 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
 	/* Set parameters for the MM_STA_ADD_REQ message */
 	memcpy(&(req->mac_addr.array[0]), mac, ETH_ALEN);
 
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	req->rate_set.length = params->supported_rates_len;
-#else
 	req->rate_set.length = params->link_sta_params.supported_rates_len;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 
 	for (i = 0; i < req->rate_set.length; i++){
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-		req->rate_set.array[i] = params->supported_rates[i];
-#else
 		req->rate_set.array[i] = params->link_sta_params.supported_rates[i];
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 	}
 
 	req->flags = 0;
 
 
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	if (params->ht_capa) {
-		const struct ieee80211_ht_cap *ht_capa = params->ht_capa;
-#else
 	if (params->link_sta_params.ht_capa) {
 		const struct ieee80211_ht_cap *ht_capa = params->link_sta_params.ht_capa;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 
 		req->flags |= STA_HT_CAPA;
 		req->ht_cap.ht_capa_info = cpu_to_le16(ht_capa->cap_info);
@@ -2164,14 +2114,8 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
 		req->ht_cap.asel_capa = ht_capa->antenna_selection_info;
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	if (params->vht_capa) {
-		const struct ieee80211_vht_cap *vht_capa = params->vht_capa;
-#else
 	if (params->link_sta_params.vht_capa) {
 		const struct ieee80211_vht_cap *vht_capa = params->link_sta_params.vht_capa;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 
         req->flags |= STA_VHT_CAPA;
         req->vht_cap.vht_capa_info = cpu_to_le32(vht_capa->vht_cap_info);
@@ -2180,27 +2124,9 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
         req->vht_cap.tx_highest = cpu_to_le16(vht_capa->supp_mcs.tx_highest);
         req->vht_cap.tx_mcs_map = cpu_to_le16(vht_capa->supp_mcs.tx_mcs_map);
     }
-#elif defined(CONFIG_VHT_FOR_OLD_KERNEL)
-    if (sta->vht) {
-        const struct ieee80211_vht_cap *vht_capa = rwnx_vht_capa;
 
-        req->flags |= STA_VHT_CAPA;
-        req->vht_cap.vht_capa_info = cpu_to_le32(vht_capa->vht_cap_info);
-        req->vht_cap.rx_highest = cpu_to_le16(vht_capa->supp_mcs.rx_highest);
-        req->vht_cap.rx_mcs_map = cpu_to_le16(vht_capa->supp_mcs.rx_mcs_map);
-        req->vht_cap.tx_highest = cpu_to_le16(vht_capa->supp_mcs.tx_highest);
-        req->vht_cap.tx_mcs_map = cpu_to_le16(vht_capa->supp_mcs.tx_mcs_map);
-    }
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	if (params->he_capa) {
-		const struct ieee80211_he_cap_elem *he_capa = params->he_capa;
-#else
 	if (params->link_sta_params.he_capa) {
 		const struct ieee80211_he_cap_elem *he_capa = params->link_sta_params.he_capa;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 
 		struct ieee80211_he_mcs_nss_supp *mcs_nss_supp =
 								(struct ieee80211_he_mcs_nss_supp *)(he_capa + 1);
@@ -2219,48 +2145,6 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
 		req->he_cap.mcs_supp.rx_mcs_80p80 = mcs_nss_supp->rx_mcs_80p80;
 		req->he_cap.mcs_supp.tx_mcs_80p80 = mcs_nss_supp->tx_mcs_80p80;
 	}
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 20, 0))
-	if (params->he_capa) {
-		const struct ieee80211_he_cap_elem_4_19 *he_capa = (const struct ieee80211_he_cap_elem_4_19 *) params->he_capa;
-		struct ieee80211_he_mcs_nss_supp *mcs_nss_supp =
-								(struct ieee80211_he_mcs_nss_supp *)(he_capa + 1);
-
-                req->flags |= STA_HE_CAPA;
-                for (i = 0; i < ARRAY_SIZE(he_capa->mac_cap_info); i++) {
-                        req->he_cap.mac_cap_info[i] = he_capa->mac_cap_info[i];
-                }
-                for (i = 0; i < ARRAY_SIZE(he_capa->phy_cap_info); i++) {
-                        req->he_cap.phy_cap_info[i] = he_capa->phy_cap_info[i];
-                }
-                req->he_cap.mcs_supp.rx_mcs_80 = mcs_nss_supp->rx_mcs_80;
-                req->he_cap.mcs_supp.tx_mcs_80 = mcs_nss_supp->tx_mcs_80;
-                req->he_cap.mcs_supp.rx_mcs_160 = mcs_nss_supp->rx_mcs_160;
-                req->he_cap.mcs_supp.tx_mcs_160 = mcs_nss_supp->tx_mcs_160;
-                req->he_cap.mcs_supp.rx_mcs_80p80 = mcs_nss_supp->rx_mcs_80p80;
-                req->he_cap.mcs_supp.tx_mcs_80p80 = mcs_nss_supp->tx_mcs_80p80;
-	}
-#else
-	#ifdef CONFIG_HE_FOR_OLD_KERNEL
-	if (sta->he) {
-		const struct ieee80211_he_cap_elem *he_capa = &rwnx_he_capa.he_cap.he_cap_elem;
-		struct ieee80211_he_mcs_nss_supp *mcs_nss_supp =
-								(struct ieee80211_he_mcs_nss_supp *)(he_capa + 1);
-		req->flags |= STA_HE_CAPA;
-		for (i = 0; i < ARRAY_SIZE(he_capa->mac_cap_info); i++) {
-			req->he_cap.mac_cap_info[i] = he_capa->mac_cap_info[i];
-		}
-		for (i = 0; i < ARRAY_SIZE(he_capa->phy_cap_info); i++) {
-			req->he_cap.phy_cap_info[i] = he_capa->phy_cap_info[i];
-		}
-		req->he_cap.mcs_supp.rx_mcs_80 = mcs_nss_supp->rx_mcs_80;
-		req->he_cap.mcs_supp.tx_mcs_80 = mcs_nss_supp->tx_mcs_80;
-		req->he_cap.mcs_supp.rx_mcs_160 = mcs_nss_supp->rx_mcs_160;
-		req->he_cap.mcs_supp.tx_mcs_160 = mcs_nss_supp->tx_mcs_160;
-		req->he_cap.mcs_supp.rx_mcs_80p80 = mcs_nss_supp->rx_mcs_80p80;
-		req->he_cap.mcs_supp.tx_mcs_80p80 = mcs_nss_supp->tx_mcs_80p80;
-    }
-	#endif
-#endif
 
 	if (params->sta_flags_set & BIT(NL80211_STA_FLAG_WME))
 		req->flags |= STA_QOS_CAPA;
@@ -2268,17 +2152,10 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
 	if (params->sta_flags_set & BIT(NL80211_STA_FLAG_MFP))
 		req->flags |= STA_MFP_CAPA;
 
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	if (params->opmode_notif_used) {
-		req->opmode = params->opmode_notif;
-#else
 	if (params->link_sta_params.opmode_notif_used) {
 		req->opmode = params->link_sta_params.opmode_notif;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 		req->flags |= STA_OPMOD_NOTIF;
 	}
-	#endif
 
 	req->aid = cpu_to_le16(params->aid);
 	req->uapsd_queues = params->uapsd_queues;
@@ -2790,11 +2667,9 @@ int rwnx_send_scanu_req(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 	req->ssid_cnt = (u8)min_t(int, SCAN_SSID_MAX, param->n_ssids);
 	req->bssid = mac_addr_bcst;
 	req->no_cck = param->no_cck;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     if (param->duration_mandatory)
         //req->duration = ieee80211_tu_to_usec(param->duration);
         req->duration = 0;
-#endif
 
 #ifdef RADAR_OR_IR_DETECT
 	if (req->ssid_cnt == 0)
@@ -2996,9 +2871,7 @@ int rwnx_send_mesh_start_req(struct rwnx_hw *rwnx_hw, struct rwnx_vif *vif,
 
 	req->user_mpm = setup->user_mpm;
 	req->is_auth = setup->is_authenticated;
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)
 	req->auth_id = setup->auth_id;
-	#endif
 	req->ie_len = setup->ie_len;
 
 	if (setup->ie_len) {
@@ -3030,11 +2903,9 @@ int rwnx_send_mesh_start_req(struct rwnx_hw *rwnx_hw, struct rwnx_vif *vif,
 		 * of 1Mbps, and multiplied by 2 so that 5.5 becomes 11 */
 		rate = (rate << 1) / 10;
 
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0) // TODO: check basic rates
 		if (setup->basic_rates & CO_BIT(i)) {
 			rate |= 0x80;
 		}
-		#endif
 
 		req->basic_rates.array[i] = (u8)rate;
 		req->basic_rates.length++;
@@ -3758,17 +3629,9 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 //	struct wiphy *wiphy = rwnx_hw->wiphy;
 	//struct mm_set_stack_start_req *req;
 //	struct ieee80211_sta_ht_cap *ht_cap;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 //	struct ieee80211_sta_vht_cap *vht_cap;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 //	struct ieee80211_sta_he_cap const *he_cap = NULL;
-#else
-	#ifdef CONFIG_HE_FOR_OLD_KERNEL
-	struct ieee80211_sta_he_cap const *he_cap;
-	#endif
-#endif
 
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
@@ -3790,14 +3653,10 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 
 	if (rwnx_hw->band_5g_support) {
 		ht_cap = &wiphy->bands[NL80211_BAND_5GHZ]->ht_cap;
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 		vht_cap = &wiphy->bands[NL80211_BAND_5GHZ]->vht_cap;
-	#endif
 	} else {
 		ht_cap = &wiphy->bands[NL80211_BAND_2GHZ]->ht_cap;
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 		vht_cap = &wiphy->bands[NL80211_BAND_2GHZ]->vht_cap;
-	#endif
 	}
 #ifdef CONFIG_VHT_FOR_OLD_KERNEL
 	rwnx_vht_capa = vht_cap;
@@ -3807,9 +3666,7 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 
 	//********************config
 	all_param_req->config_req.ht_supp = ht_cap->ht_supported;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 	all_param_req->config_req.vht_supp = vht_cap->vht_supported;
-#endif
 	all_param_req->config_req.ht_cap.ht_capa_info = cpu_to_le16(ht_cap->cap | IEEE80211_HT_CAP_LDPC_CODING);
 	all_param_req->config_req.ht_cap.a_mpdu_param = ht_cap->ampdu_factor |
 									 (ht_cap->ampdu_density <<
@@ -3820,7 +3677,6 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 	all_param_req->config_req.ht_cap.tx_beamforming_capa = 0;
 	all_param_req->config_req.ht_cap.asel_capa = 0;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
 	if (all_param_req->config_req.vht_supp) {
 		all_param_req->config_req.vht_cap.vht_capa_info = cpu_to_le32(vht_cap->cap);
 		all_param_req->config_req.vht_cap.rx_highest = cpu_to_le16(vht_cap->vht_mcs.rx_highest);
@@ -3828,14 +3684,10 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 		all_param_req->config_req.vht_cap.tx_highest = cpu_to_le16(vht_cap->vht_mcs.tx_highest);
 		all_param_req->config_req.vht_cap.tx_mcs_map = cpu_to_le16(vht_cap->vht_mcs.tx_mcs_map);
 	}
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) || defined(CONFIG_HE_FOR_OLD_KERNEL)
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	if (wiphy->bands[NL80211_BAND_2GHZ]->iftype_data != NULL)//{
 		he_cap = &wiphy->bands[NL80211_BAND_2GHZ]->iftype_data->he_cap;
 	//}
-	#endif
 	#if defined(CONFIG_HE_FOR_OLD_KERNEL)
 	//if (1) {
 	he_cap = &rwnx_he_capa.he_cap;
@@ -3858,10 +3710,6 @@ int rwnx_send_resume_restore(struct rwnx_hw *rwnx_hw, u8_l on, u8_l efuse_valid,
 	}
 	all_param_req->config_req.he_ul_on = rwnx_hw->mod_params->he_ul_on;
 	//}
-#else
-	all_param_req->config_req.he_supp = false;
-	all_param_req->config_req.he_ul_on = false;
-#endif
 	all_param_req->config_req.ps_on = rwnx_hw->mod_params->ps_on;
 	all_param_req->config_req.dpsm = rwnx_hw->mod_params->dpsm;
 	all_param_req->config_req.tx_lft = rwnx_hw->mod_params->tx_lft;

@@ -106,7 +106,7 @@ int aicwf_bus_init(uint bus_hdrlen, struct device *dev)
 	//bus_if->busrx_thread = kthread_run(pcie_rxbuf_rep_thread, (void *)bus_if, "pcie_rxbuf_rep_thread");
 #endif
 
-#if defined(AICWF_SDIO_SUPPORT) || defined(AICWF_USB_SUPPORT)
+#if (defined(AICWF_SDIO_SUPPORT)) || (defined(AICWF_USB_SUPPORT))
 	if (IS_ERR(bus_if->bustx_thread)) {
 		bus_if->bustx_thread  = NULL;
 		txrx_err("aicwf_bustx_thread run fail\n");

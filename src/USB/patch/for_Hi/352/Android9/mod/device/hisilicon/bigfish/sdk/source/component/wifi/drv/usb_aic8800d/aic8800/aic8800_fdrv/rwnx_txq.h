@@ -78,7 +78,7 @@
 #define NX_BCMC_TXQ_NDEV_IDX (NX_NB_TID_PER_STA * NX_REMOTE_STA_MAX)
 #define NX_STA_NDEV_IDX(tid, sta_idx) ((tid) + (sta_idx) * NX_NB_TID_PER_STA)
 #define NDEV_NO_TXQ 0xffff
-#if (NX_NB_NDEV_TXQ >= NDEV_NO_TXQ)
+#if NX_NB_NDEV_TXQ >= NDEV_NO_TXQ
 #error("Need to increase struct rwnx_txq->ndev_idx size")
 #endif
 
@@ -90,7 +90,7 @@
 #endif /*  CONFIG_RWNX_FULLMAC */
 
 #define TXQ_INACTIVE 0xffff
-#if (NX_NB_TXQ >= TXQ_INACTIVE)
+#if NX_NB_TXQ >= TXQ_INACTIVE
 #error("Need to increase struct rwnx_txq->idx size")
 #endif
 

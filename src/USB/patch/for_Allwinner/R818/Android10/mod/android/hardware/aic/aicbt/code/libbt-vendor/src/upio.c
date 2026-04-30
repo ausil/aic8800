@@ -44,7 +44,7 @@
 #define UPIO_DBG FALSE
 #endif
 
-#if (UPIO_DBG == TRUE)
+#if UPIO_DBG == TRUE
 #define UPIODBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define UPIODBG(param, ...) {}
@@ -54,7 +54,7 @@
 **  Local type definitions
 ******************************************************************************/
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
 
 /* proc fs node for enable/disable lpm mode */
 #ifndef VENDOR_LPM_PROC_NODE
@@ -227,7 +227,7 @@ int bt_wake_up_host_mode_set(uint8_t mode)
 **   LPM Static Functions
 *****************************************************************************/
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
 /*******************************************************************************
 **
 ** Function        proc_btwrite_timeout
@@ -260,7 +260,7 @@ static void proc_btwrite_timeout(union sigval arg)
 void upio_init(void)
 {
     memset(upio_state, UPIO_UNKNOWN, UPIO_MAX_COUNT);
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     memset(&lpm_proc_cb, 0, sizeof(vnd_lpm_proc_cb_t));
 #endif
 }
@@ -276,7 +276,7 @@ void upio_init(void)
 *******************************************************************************/
 void upio_cleanup(void)
 {
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     if (lpm_proc_cb.timer_created == TRUE)
         timer_delete(lpm_proc_cb.timer_id);
 
@@ -373,7 +373,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 {
     //int rc;
     AIC_UNUSED(polarity);
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     int fd = -1;
     char buffer;
 #endif
@@ -390,7 +390,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 
             upio_state[UPIO_LPM_MODE] = action;
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
             fd = open(VENDOR_LPM_PROC_NODE, O_WRONLY);
 
             if (fd < 0)
@@ -456,7 +456,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
                 AIC_UNUSED(lpm_state[action]);
                 UPIODBG("BT_WAKE is %s already", lpm_state[action]);
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
                 if (lpm_proc_cb.btwrite_active == TRUE)
                     /*
                      * The proc btwrite node could have not been updated for
@@ -473,7 +473,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 
             upio_state[UPIO_BT_WAKE] = action;
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL == TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL == TRUE
 
             userial_vendor_ioctl( ( (action==UPIO_ASSERT) ? \
                       USERIAL_OP_ASSERT_BT_WAKE : USERIAL_OP_DEASSERT_BT_WAKE),\

@@ -46,7 +46,7 @@ extern uint8_t coex_log_enable;
 extern void hw_config_start(char transtype);
 extern void hw_usb_config_start(char transtype,uint32_t val);
 
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 void hw_epilog_process(void);
 #endif
 
@@ -546,7 +546,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
                     }
                 }
                 else {
-#if (HW_END_WITH_HCI_RESET == FALSE)
+#if HW_END_WITH_HCI_RESET == FALSE
                     if (bt_vendor_cbacks)
                     {
                         bt_vendor_cbacks->epilog_cb(BT_VND_OP_RESULT_SUCCESS);

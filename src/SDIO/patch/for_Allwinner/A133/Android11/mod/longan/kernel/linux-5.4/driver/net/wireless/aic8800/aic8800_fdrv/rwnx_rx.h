@@ -295,7 +295,7 @@ struct hw_rxhdr {
 	u32    flags_is_80211_mpdu: 1;
 	u32    flags_is_4addr     : 1;
 	u32    flags_new_peer     : 1;
-#if defined(AICWF_SDIO_SUPPORT) || defined(AICWF_USB_SUPPORT)
+#if (defined(AICWF_SDIO_SUPPORT)) || (defined(AICWF_USB_SUPPORT))
 	u32    flags_user_prio    : 1; // aic: fw not fill any more
 	u32    flags_need_reord   : 1;
 	u32    flags_upload       : 1;
@@ -357,11 +357,7 @@ int reord_need_check(struct reord_ctrl *preorder_ctrl, u16 seq_num);
 int reord_rxframe_enqueue(struct reord_ctrl *preorder_ctrl, struct recv_msdu *prframe);
 void reord_timeout_worker(struct work_struct *work);
 int reord_single_frame_ind(struct aicwf_rx_priv *rx_priv, struct recv_msdu *prframe);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void reord_timeout_handler (ulong data);
-#else
 void reord_timeout_handler (struct timer_list *t);
-#endif
 
 #endif
 

@@ -1,6 +1,6 @@
 #include <linux/types.h>
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 typedef struct {
     uint32_t bit_mask[3];
     uint32_t reserved;
@@ -36,7 +36,7 @@ int aicwf_patch_table_load(struct rwnx_hw *rwnx_hw, char *filename);
 void aicwf_patch_config_8800dc(struct rwnx_hw *rwnx_hw);
 int aicwf_set_rf_config_8800dc(struct rwnx_hw *rwnx_hw, struct mm_set_rf_calib_cfm *cfm);
 int aicwf_misc_ram_init_8800dc(struct rwnx_hw *rwnx_hw);
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 int aicwf_misc_ram_valid_check_8800dc(struct rwnx_hw *rwnx_hw, int *valid_out);
 int aicwf_plat_calib_load_8800dc(struct rwnx_hw *rwnx_hw);
 #endif

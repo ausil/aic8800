@@ -227,7 +227,7 @@ static void aicwf_usb_tx_complete(struct urb *urb)
         skb = usb_buf->skb;
         dev_kfree_skb_any(skb);
     }
-    #if !defined CONFIG_USB_NO_TRANS_DMA_MAP
+    #if !(defined CONFIG_USB_NO_TRANS_DMA_MAP)
     else {
         u8 *buf;
         buf = (u8 *)usb_buf->skb;

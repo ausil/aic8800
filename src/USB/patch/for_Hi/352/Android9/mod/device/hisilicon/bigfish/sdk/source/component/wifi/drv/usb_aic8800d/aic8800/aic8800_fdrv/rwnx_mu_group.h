@@ -16,7 +16,7 @@
 struct rwnx_hw;
 struct rwnx_sta;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
+#if defined(CONFIG_VHT_FOR_OLD_KERNEL)
 struct ieee80211_vht_cap {
         __le32 vht_cap_info;
         struct ieee80211_vht_mcs_info supp_mcs;

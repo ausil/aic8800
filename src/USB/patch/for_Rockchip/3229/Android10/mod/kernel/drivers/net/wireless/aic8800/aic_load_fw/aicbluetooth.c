@@ -184,11 +184,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name, struct device *dev
     }
 
 
-    #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
     rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-    #else
-    rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-    #endif
 
     if(size != rdlen){
             printk("%s: %s file rdlen invalid %d %d\n", __func__, name, (int)rdlen, size);
@@ -479,11 +475,7 @@ int rwnx_plat_nvram_upload_android(struct aic_usb_dev *usbdev, char *filename){
             return 0;
     }
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
 	rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-#else
-	rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-#endif 
 
 	if(size != rdlen){
 			printk("%s: %s file rdlen invalid %d %d\n", __func__, filename, (int)rdlen, size);

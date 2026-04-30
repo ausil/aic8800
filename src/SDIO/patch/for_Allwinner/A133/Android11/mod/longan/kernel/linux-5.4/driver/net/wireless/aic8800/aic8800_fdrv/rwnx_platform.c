@@ -30,9 +30,7 @@
 #include "aicwf_usb.h"
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif
 
 struct rwnx_plat *g_rwnx_plat;
 
@@ -941,11 +939,7 @@ static int aic_load_firmware(u32 **fw_buf, const char *name, struct device *devi
 		return -1;
 	}
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
 	rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-#else
-	rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-#endif
 
 	if (size != rdlen) {
 		printk("%s: %s file rdlen invalid %d %d\n", __func__, name, (int)rdlen, size);
@@ -1075,7 +1069,7 @@ static int rwnx_platform_reset(struct rwnx_plat *rwnx_plat)
 {
 	u32 regval;
 
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 	return 0;
 #endif
 
@@ -1378,7 +1372,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
  */
 void rwnx_platform_off(struct rwnx_hw *rwnx_hw, void **config)
 {
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 	rwnx_hw->plat->enabled = false;
 	return ;
 #endif

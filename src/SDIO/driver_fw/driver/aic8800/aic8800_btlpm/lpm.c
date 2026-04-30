@@ -120,7 +120,7 @@ static atomic_t open_count = ATOMIC_INIT(1);
  * Local function prototypes
  */
 
-#if !BT_BLUEDROID_SUPPORT
+#if !(BT_BLUEDROID_SUPPORT)
 static int bluesleep_hci_event(struct notifier_block *this,
 				unsigned long event, void *data);
 #endif
@@ -142,7 +142,7 @@ static struct timer_list rx_timer;
 /** Lock for state transitions */
 static spinlock_t rw_lock;
 
-#if !BT_BLUEDROID_SUPPORT
+#if !(BT_BLUEDROID_SUPPORT)
 /** Notifier block for HCI events */
 struct notifier_block hci_event_nblock = {
 	.notifier_call = bluesleep_hci_event,
@@ -894,7 +894,7 @@ int bluesleep_init(struct platform_device *pdev)
 		return retval;
 #endif
 
-#if !BT_BLUEDROID_SUPPORT
+#if !(BT_BLUEDROID_SUPPORT)
 	bluesleep_hdev = NULL;
 #endif
 
@@ -974,7 +974,7 @@ int bluesleep_init(struct platform_device *pdev)
 	/* initialize host wake tasklet */
 	tasklet_init(&hostwake_task, bluesleep_hostwake_task, 0);
 
-#if !BT_BLUEDROID_SUPPORT
+#if !(BT_BLUEDROID_SUPPORT)
 	hci_register_notifier(&hci_event_nblock);
 #endif
 
@@ -1001,7 +1001,7 @@ fail:
  */
 int bluesleep_exit(struct platform_device *dev)
 {
-#if !BT_BLUEDROID_SUPPORT
+#if !(BT_BLUEDROID_SUPPORT)
 	hci_unregister_notifier(&hci_event_nblock);
 #endif
 

@@ -1115,7 +1115,7 @@ static int rwnx_close (struct net_device * dev)
 
 	RWNX_DBG (RWNX_FN_ENTRY_STR);
 
-#if defined (AICWF_USB_SUPPORT) 	|| defined(AICWF_SDIO_SUPPORT)	||defined (AICWF_PCIE_SUPPORT)
+#if (defined (AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT)) || (defined (AICWF_PCIE_SUPPORT))
 
 	if (scanning) {
 		scanning = false;
@@ -3350,12 +3350,7 @@ end:
  * @change_beacon: Change the beacon parameters for an access point mode
  *	interface. This should reject the call when AP mode wasn't started.
  */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 7, 0)
 static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev,struct cfg80211_ap_update *info)
-#else
-static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev,
-									   struct cfg80211_beacon_data *info)
-#endif
 {
 	struct rwnx_hw *rwnx_hw = wiphy_priv(wiphy);
 	struct rwnx_vif *vif = netdev_priv(dev);
@@ -3368,11 +3363,7 @@ static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *d
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
 	// Build the beacon
-#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 7, 0)
 	bcn_buf = rwnx_build_bcn(bcn, &info->beacon);
-#else
-	bcn_buf = rwnx_build_bcn(bcn, info);
-#endif
 	if (!bcn_buf)
 		return -ENOMEM;
 
@@ -4030,9 +4021,7 @@ int rwnx_cfg80211_start_radar_detection(struct wiphy *wiphy,
 										struct net_device *dev,
 										struct cfg80211_chan_def *chandef,
 										u32 cac_time_ms
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
 									, int link_id
-#endif
 									)
 {
 	struct rwnx_hw *rwnx_hw = wiphy_priv(wiphy);
@@ -4173,17 +4162,7 @@ int rwnx_cfg80211_channel_switch(struct wiphy *wiphy,
     } else {
         INIT_WORK(&csa->work, rwnx_csa_finish);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
 		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false);
-#elif LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION4
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false, 0);
-#elif LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION2
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, params->count, params->block_tx);
-#else
-        cfg80211_ch_switch_started_notify(dev, &csa->chandef, params->count);
-#endif
     }
 
 #ifdef CONFIG_BAND_STEERING

@@ -12,7 +12,7 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM rwnx
 
-#if !defined(_RWNX_EVENTS_H) || defined(TRACE_HEADER_MULTI_READ)
+#if !((defined(_RWNX_EVENTS_H)) || (defined(TRACE_HEADER_MULTI_READ)))
 #define _RWNX_EVENTS_H
 
 #include <linux/tracepoint.h>
@@ -26,7 +26,7 @@
  ****************************************************************************/
 #ifdef CONFIG_RWNX_FULLMAC
 #include "linux/ieee80211.h"
-#if defined(CONFIG_TRACEPOINTS) && defined(CREATE_TRACE_POINTS)
+#if (defined(CONFIG_TRACEPOINTS)) && (defined(CREATE_TRACE_POINTS))
 #include <linux/trace_seq.h>
 
 /* P2P Public Action Frames Definitions (see WiFi P2P Technical Specification, section 4.2.8) */
@@ -312,7 +312,7 @@ TRACE_EVENT(
  * TRACE function for TXQ
  ****************************************************************************/
 #ifndef CONFIG_RWNX_FHOST
-#if defined(CONFIG_TRACEPOINTS) && defined(CREATE_TRACE_POINTS)
+#if (defined(CONFIG_TRACEPOINTS)) && (defined(CREATE_TRACE_POINTS))
 
 #include <linux/trace_seq.h>
 #include <linux/trace_events.h>

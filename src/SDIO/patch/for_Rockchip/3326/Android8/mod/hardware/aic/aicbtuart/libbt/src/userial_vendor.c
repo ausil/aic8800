@@ -45,7 +45,7 @@
 #define VNDUSERIAL_DBG FALSE
 #endif
 
-#if (VNDUSERIAL_DBG == TRUE)
+#if VNDUSERIAL_DBG == TRUE
 #define VNDUSERIALDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define VNDUSERIALDBG(param, ...) {}
@@ -127,7 +127,7 @@ uint8_t userial_to_tcio_baud(uint8_t cfg_baud, uint32_t *baud)
     return TRUE;
 }
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
 /*******************************************************************************
 **
 ** Function        userial_ioctl_init_bt_wake
@@ -143,7 +143,7 @@ void userial_ioctl_init_bt_wake(int fd)
 {
     uint32_t bt_wake_state;
 
-#if (BT_WAKE_USERIAL_LDISC==TRUE)
+#if BT_WAKE_USERIAL_LDISC==TRUE
     int ldisc = N_AICBT_HCI; /* acibt sleep mode support line discipline */
 
     /* attempt to load enable discipline driver */
@@ -266,7 +266,7 @@ int userial_vendor_open(tUSERIAL_CFG *p_cfg)
     cfsetispeed(&vnd_userial.termios, baud);
     tcsetattr(vnd_userial.fd, TCSANOW, &vnd_userial.termios);
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
     userial_ioctl_init_bt_wake(vnd_userial.fd);
 #endif
 
@@ -295,7 +295,7 @@ void userial_vendor_close(void)
     if (vnd_userial.fd == -1)
         return;
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
     /* de-assert bt_wake BEFORE closing port */
     ioctl(vnd_userial.fd, USERIAL_IOCTL_BT_WAKE_DEASSERT, NULL);
 #endif
@@ -343,7 +343,7 @@ void userial_vendor_set_baud(uint8_t userial_baud)
 void userial_vendor_ioctl(userial_vendor_ioctl_op_t op, void *p_data)
 {
     switch (op) {
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
         case USERIAL_OP_ASSERT_BT_WAKE:
             VNDUSERIALDBG("## userial_vendor_ioctl: Asserting BT_Wake ##");
             ioctl(vnd_userial.fd, USERIAL_IOCTL_BT_WAKE_ASSERT, NULL);

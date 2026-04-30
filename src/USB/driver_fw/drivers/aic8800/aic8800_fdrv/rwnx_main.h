@@ -60,11 +60,7 @@ struct rwnx_sta *rwnx_retrieve_sta(struct rwnx_hw *rwnx_hw,
 
 #ifdef CONFIG_BAND_STEERING
 void aicwf_steering_work(struct work_struct *work);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void aicwf_steering_timeout(ulong data);
-#else
 void aicwf_steering_timeout(struct timer_list *t);
-#endif
 #endif
 
 #ifdef CONFIG_DYNAMIC_PERPWR
@@ -83,30 +79,17 @@ void aicwf_tcloss_worker(struct work_struct *work);
 void rwnx_skb_align_8bytes(struct sk_buff *skb);
 void rwnx_frame_parser(char* tag, char* data, unsigned long len);
 void rwnx_update_mesh_power_mode(struct rwnx_vif *vif);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aicwf_p2p_alive_timeout(ulong data);
-#else
 void aicwf_p2p_alive_timeout(struct timer_list *t);
-#endif
 int rwnx_send_check_p2p(struct cfg80211_scan_request *param);
 void apm_staloss_work_process(struct work_struct *work);
 void apm_probe_sta_work_process(struct work_struct *work);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0))
 int rwnx_cfg80211_set_monitor_channel_(struct wiphy *wiphy,
                                              struct net_device *dev,
                                              struct cfg80211_chan_def *chandef);
-#else
-int rwnx_cfg80211_set_monitor_channel_(struct wiphy *wiphy,
-                                             struct cfg80211_chan_def *chandef);
-#endif
 int rwnx_cfg80211_probe_client(struct wiphy *wiphy, struct net_device *dev,
             const u8 *peer, u64 *cookie);
 void rwnx_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0))
-                   struct net_device *dev,
-#else
                    struct wireless_dev *wdev,
-#endif
                    u16 frame_type, bool reg);
 
 int rwnx_cfg80211_channel_switch(struct wiphy *wiphy,

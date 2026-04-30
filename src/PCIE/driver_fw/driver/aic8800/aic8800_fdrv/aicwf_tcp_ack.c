@@ -26,11 +26,7 @@ void intf_tcp_drop_msg(struct rwnx_hw *priv,
 	kfree(msg);
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-void tcp_ack_timeout(unsigned long data)
-#else
 void tcp_ack_timeout(struct timer_list *t)
-#endif
 {
 	//printk("%s \n",__func__);
 	struct tcp_ack_info *ack_info;
@@ -38,11 +34,7 @@ void tcp_ack_timeout(struct timer_list *t)
 	struct tcp_ack_manage *ack_m = NULL;
 	struct rwnx_hw *rwnx_hw;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-	ack_info = (struct tcp_ack_info *)data;
-#else
 	ack_info = container_of(t,struct tcp_ack_info,timer);
-#endif
 
 	ack_m = container_of(ack_info, struct tcp_ack_manage,
 			     ack_info[ack_info->ack_info_num]);
@@ -90,12 +82,7 @@ void tcp_ack_init(struct rwnx_hw *priv)
 		ack_info->last_time = jiffies;
 		ack_info->timeout = msecs_to_jiffies(ACK_OLD_TIME);
 
-		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) 
-			setup_timer(&ack_info->timer, tcp_ack_timeout,
-				    (unsigned long)ack_info);
-		#else
 			timer_setup(&ack_info->timer,tcp_ack_timeout,0);
-		#endif
 	}
 
 	atomic_set(&ack_m->enable, 1);

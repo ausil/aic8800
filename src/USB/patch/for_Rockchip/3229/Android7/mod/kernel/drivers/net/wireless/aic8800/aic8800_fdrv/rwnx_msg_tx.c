@@ -129,11 +129,7 @@ static inline u8_l get_chan_flags(uint32_t flags)
 {
     u8_l chan_flags = 0;
 #ifdef RADAR_OR_IR_DETECT
-    #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-    if (flags & IEEE80211_CHAN_PASSIVE_SCAN)
-    #else
     if (flags & IEEE80211_CHAN_NO_IR)
-    #endif
         chan_flags |= CHAN_NO_IR;
     if (flags & IEEE80211_CHAN_RADAR)
         chan_flags |= CHAN_RADAR;
@@ -732,7 +728,7 @@ int rwnx_send_key_add(struct rwnx_hw *rwnx_hw, u8 vif_idx, u8 sta_idx, bool pair
     RWNX_DBG("%s: sta_idx:%d key_idx:%d inst_nbr:%d cipher:%d key_len:%d\n", __func__,
              key_add_req->sta_idx, key_add_req->key_idx, key_add_req->inst_nbr,
              key_add_req->cipher_suite, key_add_req->key.length);
-#if defined(CONFIG_RWNX_DBG) || defined(CONFIG_DYNAMIC_DEBUG)
+#if (defined(CONFIG_RWNX_DBG)) || (defined(CONFIG_DYNAMIC_DEBUG))
     print_hex_dump_bytes("key: ", DUMP_PREFIX_OFFSET, key_add_req->key.array, key_add_req->key.length);
 #endif
 
@@ -1304,13 +1300,7 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
 	struct ieee80211_sta_ht_cap *ht_cap;
 	struct ieee80211_sta_vht_cap *vht_cap;
 	
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
     struct ieee80211_sta_he_cap const *he_cap;
-#else
-    #ifdef CONFIG_HE_FOR_OLD_KERNEL
-    struct ieee80211_sta_he_cap const *he_cap;
-    #endif
-#endif
     //uint8_t *ht_mcs = (uint8_t *)&ht_cap->mcs;
     uint8_t *ht_mcs;
     int i;
@@ -1354,11 +1344,8 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
     	req->vht_cap.tx_mcs_map = cpu_to_le16(vht_cap->vht_mcs.tx_mcs_map);
     }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) || defined(CONFIG_HE_FOR_OLD_KERNEL)
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
     if (wiphy->bands[NL80211_BAND_2GHZ]->iftype_data != NULL) {
         he_cap = &wiphy->bands[NL80211_BAND_2GHZ]->iftype_data->he_cap;
-    #endif
     #if defined(CONFIG_HE_FOR_OLD_KERNEL)
     if (1) {
         he_cap = &rwnx_he_capa.he_cap;
@@ -1381,10 +1368,6 @@ int rwnx_send_me_config_req(struct rwnx_hw *rwnx_hw)
         }
         req->he_ul_on = rwnx_hw->mod_params->he_ul_on;
     }
-#else
-    req->he_supp = false;
-    req->he_ul_on = false;
-#endif
     req->ps_on = rwnx_hw->mod_params->ps_on;
     req->dpsm = rwnx_hw->mod_params->dpsm;
     req->tx_lft = rwnx_hw->mod_params->tx_lft;
@@ -1534,7 +1517,6 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
         req->vht_cap.tx_mcs_map = cpu_to_le16(vht_capa->supp_mcs.tx_mcs_map);
     }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
     if (params->he_capa) {
         const struct ieee80211_he_cap_elem *he_capa = params->he_capa;
         struct ieee80211_he_mcs_nss_supp *mcs_nss_supp =
@@ -1554,7 +1536,6 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
         req->he_cap.mcs_supp.rx_mcs_80p80 = mcs_nss_supp->rx_mcs_80p80;
         req->he_cap.mcs_supp.tx_mcs_80p80 = mcs_nss_supp->tx_mcs_80p80;
     }
-#endif
 
     if (params->sta_flags_set & BIT(NL80211_STA_FLAG_WME))
         req->flags |= STA_QOS_CAPA;
@@ -1562,12 +1543,10 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
     if (params->sta_flags_set & BIT(NL80211_STA_FLAG_MFP))
         req->flags |= STA_MFP_CAPA;
 
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
     if (params->opmode_notif_used) {
         req->flags |= STA_OPMOD_NOTIF;
         req->opmode = params->opmode_notif;
     }
-    #endif
 
     req->aid = cpu_to_le16(params->aid);
     req->uapsd_queues = params->uapsd_queues;
@@ -2248,9 +2227,7 @@ int rwnx_send_mesh_start_req(struct rwnx_hw *rwnx_hw, struct rwnx_vif *vif,
 
     req->user_mpm = setup->user_mpm;
     req->is_auth = setup->is_authenticated;
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)
     req->auth_id = setup->auth_id;
-    #endif
     req->ie_len = setup->ie_len;
 
     if (setup->ie_len) {
@@ -2282,11 +2259,9 @@ int rwnx_send_mesh_start_req(struct rwnx_hw *rwnx_hw, struct rwnx_vif *vif,
          * of 1Mbps, and multiplied by 2 so that 5.5 becomes 11 */
         rate = (rate << 1) / 10;
 
-        #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0) // TODO: check basic rates
         if (setup->basic_rates & CO_BIT(i)) {
             rate |= 0x80;
         }
-        #endif
 
         req->basic_rates.array[i] = (u8)rate;
         req->basic_rates.length++;

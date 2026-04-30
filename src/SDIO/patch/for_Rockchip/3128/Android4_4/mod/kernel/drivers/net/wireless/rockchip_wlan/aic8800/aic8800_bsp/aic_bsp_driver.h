@@ -236,7 +236,7 @@ enum dbg_msg_tag {
 	DBG_MAX,
 };
 
-#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 #define FW_M2D_OTA_NAME                 "m2d_ota.bin"
 #else
 #define FW_M2D_OTA_NAME                 "m2d_ota_lzma.bin"
@@ -470,7 +470,7 @@ enum chip_rev {
 
 #define AIC_M2D_OTA_INFO_ADDR       0x88000020
 #define AIC_M2D_OTA_DATA_ADDR       0x88000040
-#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 #define AIC_M2D_OTA_FLASH_ADDR      0x08004000
 #define AIC_M2D_OTA_CODE_START_ADDR (AIC_M2D_OTA_FLASH_ADDR + 0x0188)
 #define AIC_M2D_OTA_VER_ADDR        (AIC_M2D_OTA_FLASH_ADDR + 0x018C)

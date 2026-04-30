@@ -20,11 +20,7 @@ struct rwnx_sta *rwnx_retrieve_sta(struct rwnx_hw *rwnx_hw,
 
 #ifdef CONFIG_BAND_STEERING
 void aicwf_steering_work(struct work_struct *work);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void aicwf_steering_timeout(ulong data);
-#else
 void aicwf_steering_timeout(struct timer_list *t);
-#endif
 #endif
 
 int rwnx_cfg80211_init(struct rwnx_plat *rwnx_plat, void **platform_data);

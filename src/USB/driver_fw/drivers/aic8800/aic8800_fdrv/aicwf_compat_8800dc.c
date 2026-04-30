@@ -243,7 +243,7 @@ u32 syscfg_tbl_8800dc[][2] = {
 
 u32 patch_tbl_wifisetting[][2] =
 {
-    #if !defined(CONFIG_FPGA_VERIFICATION)
+    #if !(defined(CONFIG_FPGA_VERIFICATION))
     {0x0090, 0x0013FC00}, //rx_ringbuf_start2
     #endif
 #ifdef CONFIG_USB_TX_AGGR
@@ -1459,7 +1459,7 @@ uint32_t agc_cfg_ram[] = {
     0x00000000
 };
 
-#if !defined(CONFIG_EXT_FEM_8800DCDW)
+#if !(defined(CONFIG_EXT_FEM_8800DCDW))
 uint32_t txgain_map[96] =  {
 #ifdef CONFIG_FPGA_VERIFICATION
     0x20c0c971,
@@ -1985,7 +1985,7 @@ u32 patch_tbl_rf_func[][2] =
 };
 
 
-#if !defined(CONFIG_EXT_FEM_8800DCDW)
+#if !(defined(CONFIG_EXT_FEM_8800DCDW))
 u32 wifi_txgain_table_24g_8800dcdw[32] =
 {
     0xA4B22189, //index 0
@@ -2940,7 +2940,7 @@ void aicwf_patch_config_8800dc(struct rwnx_hw *rwnx_hw)
             }
         }
 
-        #if !defined(CONFIG_FPGA_VERIFICATION)
+        #if !(defined(CONFIG_FPGA_VERIFICATION))
         if ((IS_CHIP_ID_H())) {
             #if defined(CONFIG_EXT_FEM_8800DCDW)
             txgain_cfg_size = sizeof(txgain_map_femkct_h);
@@ -3027,7 +3027,7 @@ int aicwf_set_rf_config_8800dc(struct rwnx_hw *rwnx_hw, struct mm_set_rf_calib_c
 
 
 	if (testmode == FW_NORMAL_MODE) {
-        #if !defined(CONFIG_EXT_FEM_8800DCDW)
+        #if !(defined(CONFIG_EXT_FEM_8800DCDW))
         if (IS_CHIP_ID_H()) {
             if ((ret = rwnx_send_rf_config_req(rwnx_hw, 0,    1, (u8_l *)wifi_txgain_table_24g_8800dcdw_h, 128)))
                 return -1;
@@ -3120,7 +3120,7 @@ extern char aic_fw_path[200];
 int aicwf_plat_patch_load_8800dc(struct rwnx_hw *rwnx_hw)
 {
     int ret = 0;
-#if !defined(CONFIG_FPGA_VERIFICATION)
+#if !(defined(CONFIG_FPGA_VERIFICATION))
     if (chip_sub_id == 0) {
         ret = rwnx_plat_bin_fw_upload_2(rwnx_hw, ROM_FMAC_PATCH_ADDR, RWNX_MAC_PATCH_NAME2_8800DC);
     } else if (chip_sub_id == 1) {
@@ -3169,7 +3169,7 @@ int aicwf_plat_rftest_load_8800dc(struct rwnx_hw *rwnx_hw)
     return ret;
 }
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 int aicwf_misc_ram_valid_check_8800dc(struct rwnx_hw *rwnx_hw, int *valid_out)
 {
     int ret = 0;

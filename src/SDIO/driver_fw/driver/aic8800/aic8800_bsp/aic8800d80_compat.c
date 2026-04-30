@@ -109,7 +109,7 @@ u32 patch_tbl_8800d80[][2] = {
             USER_IPA_CALIB_DISABLE_FLAG |
             #endif
         0) & ~(
-            #if !CFG_USER_PWROFST_COVER_CALIB_EN
+            #if !(CFG_USER_PWROFST_COVER_CALIB_EN)
             USER_PWROFST_COVER_CALIB_FLAG |
             #endif
         0)
@@ -156,7 +156,7 @@ int aicwifi_patch_config_8800d80(struct aic_sdio_dev *sdiodev)
 	const u32 rd_patch_addr = RAM_FMAC_FW_ADDR + 0x0198;
 	u32 aic_patch_addr;
 	u32 config_base, aic_patch_str_base;
-	#if (NEW_PATCH_BUFFER_MAP)
+	#if NEW_PATCH_BUFFER_MAP
 	u32 patch_buff_addr, patch_buff_base, rd_version_addr, rd_version_val;
 	#endif
 	uint32_t start_addr = 0x0016F800;
@@ -190,7 +190,7 @@ int aicwifi_patch_config_8800d80(struct aic_sdio_dev *sdiodev)
 	}
 	aic_patch_str_base = rd_patch_addr_cfm.memdata;
 
-	#if (NEW_PATCH_BUFFER_MAP)
+	#if NEW_PATCH_BUFFER_MAP
 	rd_version_addr = RAM_FMAC_FW_ADDR + 0x01C;
 	if ((ret = rwnx_send_dbg_mem_read_req(sdiodev, rd_version_addr, &rd_patch_addr_cfm))) {
 		printk("version val[0x%x] rd fail: %d\n", rd_version_addr, ret);

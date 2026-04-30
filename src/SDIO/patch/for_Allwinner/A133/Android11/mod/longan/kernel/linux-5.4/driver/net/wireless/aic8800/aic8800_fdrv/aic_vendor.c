@@ -637,10 +637,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_start_mkeep_alive,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_mkeep_alive_policy,
 		.maxattr = MKEEP_ALIVE_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -650,10 +648,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_stop_mkeep_alive,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_mkeep_alive_policy,
 		.maxattr = MKEEP_ALIVE_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -663,10 +659,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_get_ver,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_logger_policy,
 		.maxattr = LOGGER_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -676,10 +670,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_subcmd_get_channel_list,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_subcmd_policy,
 		.maxattr = GSCAN_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -689,10 +681,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_subcmd_set_country_code,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_andr_wifi_policy,
 		.maxattr = ANDR_WIFI_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -702,9 +692,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_trigger_memory_dump,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 	{
 		{
@@ -714,9 +702,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_subcmd_get_feature_set,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 	{
 		{
@@ -726,9 +712,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_get_feature,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 	{
 		{
@@ -738,9 +722,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_get_ring_status,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 	{
 		{
@@ -750,10 +732,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_start_logging,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_logger_policy,
 		.maxattr = LOGGER_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -763,10 +743,8 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_get_ring_data,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = aicwf_cfg80211_logger_policy,
 		.maxattr = LOGGER_ATTRIBUTE_MAX
-#endif
 	},
 	{
 		{
@@ -776,9 +754,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_logger_get_wake_reason_stats,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 	{
 		{
@@ -788,9 +764,7 @@ const struct wiphy_vendor_command aicwf_vendor_cmd[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |  WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = aicwf_vendor_apf_subcmd_get_capabilities,
 		.dumpit = aicwf_dump_interface,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 		.policy = VENDOR_CMD_RAW_DATA,
-#endif
 	},
 };
 

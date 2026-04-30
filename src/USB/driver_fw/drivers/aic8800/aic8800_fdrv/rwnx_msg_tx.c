@@ -761,7 +761,7 @@ int rwnx_send_key_add(struct rwnx_hw *rwnx_hw, u8 vif_idx, u8 sta_idx, bool pair
     RWNX_DBG("%s: sta_idx:%d key_idx:%d inst_nbr:%d cipher:%d key_len:%d\n", __func__,
              key_add_req->sta_idx, key_add_req->key_idx, key_add_req->inst_nbr,
              key_add_req->cipher_suite, key_add_req->key.length);
-#if defined(CONFIG_RWNX_DBG) || defined(CONFIG_DYNAMIC_DEBUG)
+#if (defined(CONFIG_RWNX_DBG)) || (defined(CONFIG_DYNAMIC_DEBUG))
     print_hex_dump_bytes("key: ", DUMP_PREFIX_OFFSET, key_add_req->key.array, key_add_req->key.length);
 #endif
 
@@ -1155,9 +1155,6 @@ int rwnx_rf_write_file(void *buf, int buf_len)
     char *path = NULL;
     struct file *fp = NULL;
     loff_t pos = 0;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
-	mm_segment_t fs;
-#endif
 	
 	AICWFDBG(LOGINFO, "%s\n", __func__);
     path = __getname();
@@ -1177,20 +1174,9 @@ int rwnx_rf_write_file(void *buf, int buf_len)
 	  return -2;
 	}
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
-	fs = get_fs();
-	set_fs(KERNEL_DS);
-#endif
 	  
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	sum = kernel_write(fp, buf, buf_len, &pos);
-#else LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
-	sum = kernel_write(fp, (char *)buf, buf_len, pos);
-#endif
 	  
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 10, 0)
-	set_fs(fs);
-#endif
 
 	__putname(path);
     filp_close(fp, NULL);
@@ -1335,11 +1321,7 @@ int rwnx_send_rf_calib_req(struct rwnx_hw *rwnx_hw, struct mm_set_rf_calib_cfm *
 				return -4;
 			}
 
-		#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
 			rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-		#else
-			rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-		#endif
 			//rwnx_data_dump("cal_res.res_data",buffer,size);
 			
 			if (size != rdlen) 
@@ -3433,17 +3415,10 @@ int rwnx_send_me_sta_add(struct rwnx_hw *rwnx_hw, struct station_parameters *par
     if (params->sta_flags_set & BIT(NL80211_STA_FLAG_MFP))
         req->flags |= STA_MFP_CAPA;
 
-    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-#if LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
-	if (params->opmode_notif_used) {
-		req->opmode = params->opmode_notif;
-#else
 	if (params->link_sta_params.opmode_notif_used) {
 		req->opmode = params->link_sta_params.opmode_notif;
-#endif//LINUX_VERSION_CODE < HIGH_KERNEL_VERSION
 		req->flags |= STA_OPMOD_NOTIF;
 	}
-    #endif
 
     req->aid = cpu_to_le16(params->aid);
     req->uapsd_queues = params->uapsd_queues;

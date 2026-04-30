@@ -606,9 +606,7 @@ static inline char *aicwf_get_iwe_stream_rate(struct rwnx_hw* rwnx_hw,
 
 	u16 he_cap = false;
 	u8 he_bw = 0;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)|| defined(CONFIG_HE_FOR_OLD_KERNEL)
 	u8 he_ch_width_set = 0;
-#endif
 
 	/* parsing HT_CAP_IE	 */
 	ie_content = NULL;

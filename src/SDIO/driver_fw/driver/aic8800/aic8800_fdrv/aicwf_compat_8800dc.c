@@ -16,7 +16,7 @@ void rwnx_plat_userconfig_parsing2(char *buffer, int size);
 
 void rwnx_release_firmware_common(u32** buffer);
 
-#if !defined(CONFIG_EXT_FEM_8800DCDW)
+#if !(defined(CONFIG_EXT_FEM_8800DCDW))
 u32 wifi_txgain_table_24g_8800dcdw[32] =
 {
     0xA4B22189, //index 0
@@ -371,7 +371,7 @@ u32 wifi_rxgain_table_24g_40m_8800dcdw[64] = {
 
 #define RAM_LMAC_FW_ADDR               0x00150000
 #ifdef CONFIG_DPD
-#if (defined(CONFIG_DPD) && !defined(CONFIG_FORCE_DPD_CALIB))
+#if (defined(CONFIG_DPD)) && (!(defined(CONFIG_FORCE_DPD_CALIB)))
 extern int is_file_exist(char* name);
 #endif
 extern rf_misc_ram_lite_t dpd_res;
@@ -545,7 +545,7 @@ int aicwf_set_rf_config_8800dc(struct rwnx_hw *rwnx_hw, struct mm_set_rf_calib_c
 
 
 	if (testmode == 0) {
-        #if !defined(CONFIG_EXT_FEM_8800DCDW)
+        #if !(defined(CONFIG_EXT_FEM_8800DCDW))
         if (IS_CHIP_ID_H()) {
             if ((ret = rwnx_send_rf_config_req(rwnx_hw, 0,    1, (u8_l *)wifi_txgain_table_24g_8800dcdw_h, 128)))
                 return -1;

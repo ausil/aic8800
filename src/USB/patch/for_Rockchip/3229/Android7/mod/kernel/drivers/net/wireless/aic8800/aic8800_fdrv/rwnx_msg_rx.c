@@ -524,20 +524,14 @@ static inline int rwnx_rx_scan_done_ind(struct rwnx_hw *rwnx_hw,
                                         struct rwnx_cmd *cmd,
                                         struct ipc_e2a_msg *msg)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     struct cfg80211_scan_info info = {
         .aborted = false,
     };
-#endif
     RWNX_DBG(RWNX_FN_ENTRY_STR);
 
     rwnx_ipc_elem_var_deallocs(rwnx_hw, &rwnx_hw->scan_ie);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
     ieee80211_scan_completed(rwnx_hw->hw, &info);
-#else
-    ieee80211_scan_completed(rwnx_hw->hw, false);
-#endif
 
     return 0;
 }
@@ -557,15 +551,11 @@ static inline int rwnx_rx_scanu_start_cfm(struct rwnx_hw *rwnx_hw,
 	scanning = 0;
     //rwnx_ipc_elem_var_deallocs(rwnx_hw, &rwnx_hw->scan_ie);
     if (rwnx_hw->scan_request) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
         struct cfg80211_scan_info info = {
             .aborted = false,
         };
 
         cfg80211_scan_done(rwnx_hw->scan_request, &info);
-#else
-        cfg80211_scan_done(rwnx_hw->scan_request, false);
-#endif
     }
 
     rwnx_hw->scan_request = NULL;
@@ -587,17 +577,9 @@ static inline int rwnx_rx_scanu_result_ind(struct rwnx_hw *rwnx_hw,
     chan = ieee80211_get_channel(rwnx_hw->wiphy, ind->center_freq);
 
     if (chan != NULL) {
-        #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-        //ktime_t ts;
-        struct timespec ts;
-		get_monotonic_boottime(&ts);
-        //ts = ktime_get_real();
-        mgmt->u.probe_resp.timestamp = ((u64)ts.tv_sec*1000000) + ts.tv_nsec/1000;
-        #else
         struct timespec64 ts;
         ktime_get_real_ts64(&ts);
         mgmt->u.probe_resp.timestamp = ((u64)ts.tv_sec*1000000) + ts.tv_nsec/1000;
-        #endif
         bss = cfg80211_inform_bss_frame(rwnx_hw->wiphy, chan,
                                         (struct ieee80211_mgmt *)ind->payload,
                                         ind->length, ind->rssi * 100, GFP_ATOMIC);
@@ -867,7 +849,6 @@ static inline int rwnx_rx_sm_external_auth_required_ind(struct rwnx_hw *rwnx_hw,
     struct sm_external_auth_required_ind *ind =
         (struct sm_external_auth_required_ind *)msg->param;
     struct rwnx_vif *rwnx_vif = rwnx_hw->vif_table[ind->vif_idx];
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
     struct net_device *dev = rwnx_vif->ndev;
     struct cfg80211_external_auth_params params;
 
@@ -891,10 +872,6 @@ static inline int rwnx_rx_sm_external_auth_required_ind(struct rwnx_hw *rwnx_hw,
     }
 
     rwnx_external_auth_enable(rwnx_vif);
-#else
-    rwnx_send_sm_external_auth_required_rsp(rwnx_hw, rwnx_vif,
-                                            WLAN_STATUS_UNSPECIFIED_FAILURE);
-#endif
     return 0;
 }
 

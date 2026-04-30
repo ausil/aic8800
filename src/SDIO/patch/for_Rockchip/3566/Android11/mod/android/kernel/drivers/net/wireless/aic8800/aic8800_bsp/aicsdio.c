@@ -1049,15 +1049,9 @@ int aicwf_sdio_busrx_thread(void *data)
 }
 
 #if defined(CONFIG_SDIO_PWRCTRL)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 static void aicwf_sdio_bus_pwrctl(struct timer_list *t)
 {
 	struct aic_sdio_dev *sdiodev = from_timer(sdiodev, t, timer);
-#else
-static void aicwf_sdio_bus_pwrctl(ulong data)
-{
-	struct aic_sdio_dev *sdiodev = (struct aic_sdio_dev *) data;
-#endif
 	if (sdiodev->bus_if->state == BUS_DOWN_ST) {
 		sdio_err("bus down\n");
 		return;
@@ -1295,13 +1289,7 @@ void *aicwf_sdio_bus_init(struct aic_sdio_dev *sdiodev)
 	atomic_set(&tx_priv->tx_pktcnt, 0);
 
 #if defined(CONFIG_SDIO_PWRCTRL)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	timer_setup(&sdiodev->timer, aicwf_sdio_bus_pwrctl, 0);
-#else
-	init_timer(&sdiodev->timer);
-	sdiodev->timer.data = (ulong) sdiodev;
-	sdiodev->timer.function = aicwf_sdio_bus_pwrctl;
-#endif
 	init_completion(&sdiodev->pwrctrl_trgg);
 #endif
 	ret = aicwf_bus_init(0, sdiodev->dev);

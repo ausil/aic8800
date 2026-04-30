@@ -355,7 +355,7 @@ int main_loop(int argc, char *argv[])
 		goto out;
 	}
 
-#if defined(CONFIG_FST) && defined(CONFIG_CTRL_IFACE)
+#if (defined(CONFIG_FST)) && (defined(CONFIG_CTRL_IFACE))
 	if (!fst_global_add_ctrl(fst_ctrl_cli))
 		wpa_printf(MSG_WARNING, "Failed to add CLI FST ctrl");
 #endif

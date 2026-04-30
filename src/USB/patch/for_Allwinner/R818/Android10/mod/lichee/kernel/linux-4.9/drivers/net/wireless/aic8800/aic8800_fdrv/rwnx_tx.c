@@ -395,11 +395,7 @@ u16 rwnx_select_txq(struct rwnx_vif *rwnx_vif, struct sk_buff *skb)
         } else {
             /* use the data classifier to determine what 802.1d tag the
              * data frame has */
-            #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-            skb->priority = cfg80211_classify8021d(skb) & IEEE80211_QOS_CTL_TAG1D_MASK;
-            #else
             skb->priority = cfg80211_classify8021d(skb, NULL) & IEEE80211_QOS_CTL_TAG1D_MASK;
-            #endif
         }
         if (sta->acm)
             rwnx_downgrade_ac(sta, skb);
@@ -1175,22 +1171,9 @@ free:
  * @cookie: updated with a unique value to identify the frame with upper layer
  *
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
                          struct cfg80211_mgmt_tx_params *params, bool offchan,
                          u64 *cookie)
-#else
-int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
-                         struct ieee80211_channel *channel, bool offchan,
-                         unsigned int wait, const u8* buf, size_t len,
-                    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0))
-                         bool no_cck,
-                    #endif
-                    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0))
-                         bool dont_wait_for_ack,
-                    #endif
-                         u64 *cookie)
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) */
 {
     struct rwnx_hw *rwnx_hw = vif->rwnx_hw;
     struct rwnx_txhdr *txhdr;
@@ -1201,11 +1184,9 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
     u8 *data;
     struct rwnx_txq *txq;
     bool robust;
-    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
     const u8 *buf = params->buf;
     size_t len = params->len;
     bool no_cck = params->no_cck;
-    #endif
 
     headroom = sizeof(struct rwnx_txhdr);
     frame_len = len;
@@ -1254,7 +1235,6 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
     memcpy(data, buf, frame_len);
     robust = ieee80211_is_robust_mgmt_frame(skb);
 
-    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
     /* Update CSA counter if present */
     if (unlikely(params->n_csa_offsets) &&
         vif->wdev.iftype == NL80211_IFTYPE_AP &&
@@ -1266,7 +1246,6 @@ int rwnx_start_mgmt_xmit(struct rwnx_vif *vif, struct rwnx_sta *sta,
             data[params->csa_offsets[i]] = vif->ap.csa->count;
         }
     }
-    #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0) */
 
     /*
      * Go back to the beginning of the allocated data area

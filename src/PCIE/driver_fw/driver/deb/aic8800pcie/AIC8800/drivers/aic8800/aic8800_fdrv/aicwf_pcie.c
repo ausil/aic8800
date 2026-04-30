@@ -25,22 +25,18 @@ static const struct pci_device_id aic8820_pci_ids[] = {
 };
 
 #ifdef CONFIG_WS
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 static struct wakeup_source *pci_ws;
-#endif
 
 void rwnx_pm_stay_awake_pc(struct rwnx_hw *rwnx_hw)
 {
 	printk("%s\n", __func__);
 
 	//pm_stay_awake(&(rwnx_hw->pcidev->pci_dev->dev));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	spin_lock_bh(&rwnx_hw->pcidev->ws_lock);
 	if(pci_ws != NULL){
 		__pm_stay_awake(pci_ws);
 	}
 	spin_unlock_bh(&rwnx_hw->pcidev->ws_lock);
-#endif
 }
 
 void rwnx_pm_relax_pc(struct rwnx_hw *rwnx_hw)
@@ -48,30 +44,24 @@ void rwnx_pm_relax_pc(struct rwnx_hw *rwnx_hw)
 	printk("%s\n", __func__);
 
 	//pm_relax(&(rwnx_hw->pcidev->pci_dev->dev));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	spin_lock_bh(&rwnx_hw->pcidev->ws_lock);
 	if(pci_ws != NULL){
 		__pm_relax(pci_ws);
 	}
 	spin_unlock_bh(&rwnx_hw->pcidev->ws_lock);
-#endif
 }
 
 static void register_ws(void)
 {
 	printk("%s\n", __func__);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	pci_ws = wakeup_source_register("wifisleep");
-#endif
 }
 
 static void unregister_ws(void)
 {
 	printk("%s\n", __func__);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	wakeup_source_unregister(pci_ws);
-#endif
 }
 #endif
 
@@ -588,15 +578,11 @@ static int aicwf_pcie_suspend(struct pci_dev *pdev, pm_message_t state)
 	spin_lock_bh(&rwnx_hw->cb_lock);
 	if (rwnx_hw->scan_request) {// && rwnx_hw->scan_request->wdev == &rwnx_vif->wdev) {
 //		printk("suspend scan_done\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 		struct cfg80211_scan_info info =
 		{
 			.aborted = true,
 		};
 		cfg80211_scan_done (rwnx_hw->scan_request, &info);
-#else
-		cfg80211_scan_done (rwnx_hw->scan_request, true);
-#endif
 		printk("suspend scan_done\n");
 		rwnx_hw->scan_request = NULL;
 		scanning = 0;
@@ -637,15 +623,7 @@ static int aicwf_pcie_resume(struct pci_dev *pdev)
 		return ret;
 	}
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 37))
 	pci_restore_state(pdev);
-#else
-	ret = pci_restore_state(pdev);
-	if (ret) {
-		printk("failed on pci_restore_state %d\n", ret);
-		return ret;
-	}
-#endif
 
 	fw_started = *(volatile u32 *) (g_rwnx_plat->pcidev->pci_bar0_vaddr + 0x120000) == 0x1a0000;
 

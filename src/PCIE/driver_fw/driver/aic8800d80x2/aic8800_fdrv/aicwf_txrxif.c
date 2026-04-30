@@ -127,7 +127,7 @@ int aicwf_bus_init(uint bus_hdrlen, struct device *dev)
 
 #endif /* AICWF_PCIE_SUPPORT */
 
-#if defined(AICWF_SDIO_SUPPORT) || defined(AICWF_USB_SUPPORT)
+#if (defined(AICWF_SDIO_SUPPORT)) || (defined(AICWF_USB_SUPPORT))
 	if (IS_ERR(bus_if->bustx_thread)) {
 		bus_if->bustx_thread  = NULL;
 		txrx_err("aicwf_bustx_thread run fail\n");

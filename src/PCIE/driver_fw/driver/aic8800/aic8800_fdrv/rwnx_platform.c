@@ -507,7 +507,7 @@ u32 patch_tbl_8800d80[][2] = {
             USER_IPA_CALIB_DISABLE_FLAG |
             #endif
         0) & ~(
-            #if !CFG_USER_PWROFST_COVER_CALIB_EN
+            #if !(CFG_USER_PWROFST_COVER_CALIB_EN)
             USER_PWROFST_COVER_CALIB_FLAG |
             #endif
         0)
@@ -1832,7 +1832,7 @@ int patch_config(struct rwnx_hw *rwnx_hw)
 	const u32 rd_patch_addr = RAM_FMAC_FW_ADDR + 0x0198;
 	u32 aic_patch_addr;
 	u32 config_base, aic_patch_str_base;
-	#if (NEW_PATCH_BUFFER_MAP)
+	#if NEW_PATCH_BUFFER_MAP
 	u32 patch_buff_addr, patch_buff_base, rd_version_addr, rd_version_val;
 	#endif
 	#ifdef CONFIG_USB_BT
@@ -1891,7 +1891,7 @@ int patch_config(struct rwnx_hw *rwnx_hw)
 		}
 		AICWFDBG(LOGINFO, "%s: cfg_base:%x,patch_str_base:%x,adap_test=%d\n", __func__, config_base, aic_patch_str_base, adap_test);
 
-		#if (NEW_PATCH_BUFFER_MAP)
+		#if NEW_PATCH_BUFFER_MAP
 		rd_version_addr = RAM_FMAC_FW_ADDR + 0x01C;
 		tran_err = aicwf_pcie_tran(rwnx_hw->pcidev, (void *)(rd_version_addr), (void *)&rd_version_val, sizeof(u32), AIC_TRAN_EMB2DRV, 1);
 		if (tran_err) {
@@ -2009,7 +2009,7 @@ int patch_config(struct rwnx_hw *rwnx_hw)
 		aic_patch_str_base = *((volatile u32 *) (rwnx_hw->pcidev->pci_bar0_vaddr + aic_patch_addr));
 		AICWFDBG(LOGINFO, "%s: cfg_base:%x,patch_str_base:%x,adap_test=%d\n", __func__, config_base, aic_patch_str_base, adap_test);
 
-		#if (NEW_PATCH_BUFFER_MAP)
+		#if NEW_PATCH_BUFFER_MAP
 		rd_version_addr = RAM_FMAC_FW_ADDR + 0x01C;
 		rd_version_val = *((volatile u32 *) (rwnx_hw->pcidev->pci_bar0_vaddr + rd_version_addr));
 		AICWFDBG(LOGINFO, "rd_version_val=%08X\n", rd_version_val);
@@ -2089,7 +2089,7 @@ static int rwnx_platform_reset(struct rwnx_plat *rwnx_plat)
 {
 	u32 regval;
 
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 	return 0;
 #endif
 
@@ -3403,7 +3403,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
 	int ret;
 	struct rwnx_plat *rwnx_plat = rwnx_hw->plat;
 	(void)ret;
-#if (defined(CONFIG_NO_FIRMWARE_RELOAD) || defined(CONFIG_LOWPOWER))
+#if (defined(CONFIG_NO_FIRMWARE_RELOAD)) || (defined(CONFIG_LOWPOWER))
     unsigned int sysctl;
     volatile unsigned int *dst_mail;
 #endif
@@ -3413,7 +3413,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
 	if (rwnx_plat->enabled)
 		return 0;
 
-#if (defined(CONFIG_NO_FIRMWARE_RELOAD) || defined(CONFIG_LOWPOWER))
+#if (defined(CONFIG_NO_FIRMWARE_RELOAD)) || (defined(CONFIG_LOWPOWER))
     *(volatile uint32_t *)&rwnx_hw->ipc_env->shared->fw_init_done = 2;
     dst_mail = (volatile unsigned int *)(rwnx_hw->pcidev->pci_bar2_vaddr + 0x800ec);
     dst_mail[0] = 0x4;  //generate an empty int
@@ -3555,7 +3555,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
  */
 void rwnx_platform_off(struct rwnx_hw *rwnx_hw, void **config)
 {
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)  || defined(AICWF_PCIE_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT)) || (defined(AICWF_PCIE_SUPPORT))
 	rwnx_hw->plat->enabled = false;
 	tasklet_kill(&rwnx_hw->task);
 	tasklet_kill(&rwnx_hw->task_txrestart);

@@ -212,7 +212,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 			return -1;
 		os_memcpy(mic, hash, MD5_MAC_LEN);
 		break;
-#if defined(CONFIG_IEEE80211R) || defined(CONFIG_IEEE80211W)
+#if (defined(CONFIG_IEEE80211R)) || (defined(CONFIG_IEEE80211W))
 	case WPA_KEY_INFO_TYPE_AES_128_CMAC:
 		wpa_printf(MSG_DEBUG, "WPA: EAPOL-Key MIC using AES-CMAC");
 		return omac1_aes_128(key, buf, len, mic);
@@ -296,7 +296,7 @@ int wpa_eapol_key_mic(const u8 *key, size_t key_len, int akmp, int ver,
 			os_memcpy(mic, hash, key_len);
 			break;
 #endif /* CONFIG_DPP */
-#if defined(CONFIG_IEEE80211R) && defined(CONFIG_SHA384)
+#if (defined(CONFIG_IEEE80211R)) && (defined(CONFIG_SHA384))
 		case WPA_KEY_MGMT_FT_IEEE8021X_SHA384:
 			wpa_printf(MSG_DEBUG,
 				   "WPA: EAPOL-Key MIC using HMAC-SHA384 (AKM-defined - FT 802.1X SHA384)");
@@ -401,7 +401,7 @@ int wpa_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const char *label,
 	ptk_len = ptk->kck_len + ptk->kek_len + ptk->tk_len;
 
 	if (wpa_key_mgmt_sha384(akmp)) {
-#if defined(CONFIG_SUITEB192) || defined(CONFIG_FILS)
+#if (defined(CONFIG_SUITEB192)) || (defined(CONFIG_FILS))
 		wpa_printf(MSG_DEBUG, "WPA: PTK derivation using PRF(SHA384)");
 		if (sha384_prf(pmk, pmk_len, label, data, data_len,
 			       tmp, ptk_len) < 0)
@@ -410,7 +410,7 @@ int wpa_pmk_to_ptk(const u8 *pmk, size_t pmk_len, const char *label,
 		return -1;
 #endif /* CONFIG_SUITEB192 || CONFIG_FILS */
 	} else if (wpa_key_mgmt_sha256(akmp) || akmp == WPA_KEY_MGMT_OWE) {
-#if defined(CONFIG_IEEE80211W) || defined(CONFIG_SAE) || defined(CONFIG_FILS)
+#if (defined(CONFIG_IEEE80211W)) || (defined(CONFIG_SAE)) || (defined(CONFIG_FILS))
 		wpa_printf(MSG_DEBUG, "WPA: PTK derivation using PRF(SHA256)");
 		if (sha256_prf(pmk, pmk_len, label, data, data_len,
 			       tmp, ptk_len) < 0)
@@ -1847,12 +1847,12 @@ void rsn_pmkid(const u8 *pmk, size_t pmk_len, const u8 *aa, const u8 *spa,
 	addr[2] = spa;
 
 	if (0) {
-#if defined(CONFIG_FILS) || defined(CONFIG_SHA384)
+#if (defined(CONFIG_FILS)) || (defined(CONFIG_SHA384))
 	} else if (wpa_key_mgmt_sha384(akmp)) {
 		wpa_printf(MSG_DEBUG, "RSN: Derive PMKID using HMAC-SHA-384");
 		hmac_sha384_vector(pmk, pmk_len, 3, addr, len, hash);
 #endif /* CONFIG_FILS || CONFIG_SHA384 */
-#if defined(CONFIG_IEEE80211W) || defined(CONFIG_FILS)
+#if (defined(CONFIG_IEEE80211W)) || (defined(CONFIG_FILS))
 	} else if (wpa_key_mgmt_sha256(akmp)) {
 		wpa_printf(MSG_DEBUG, "RSN: Derive PMKID using HMAC-SHA-256");
 		hmac_sha256_vector(pmk, pmk_len, 3, addr, len, hash);
@@ -2116,7 +2116,7 @@ int wpa_compare_rsn_ie(int ft_initial_assoc,
 }
 
 
-#if defined(CONFIG_IEEE80211R) || defined(CONFIG_FILS)
+#if (defined(CONFIG_IEEE80211R)) || (defined(CONFIG_FILS))
 int wpa_insert_pmkid(u8 *ies, size_t *ies_len, const u8 *pmkid)
 {
 	u8 *start, *end, *rpos, *rend;

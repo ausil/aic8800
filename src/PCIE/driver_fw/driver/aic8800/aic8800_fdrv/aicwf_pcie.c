@@ -26,22 +26,18 @@ static const struct pci_device_id aic8820_pci_ids[] = {
 };
 
 #ifdef CONFIG_WS
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 static struct wakeup_source *pci_ws;
-#endif
 
 void rwnx_pm_stay_awake_pc(struct rwnx_hw *rwnx_hw)
 {
 	printk("%s\n", __func__);
 
 	//pm_stay_awake(&(rwnx_hw->pcidev->pci_dev->dev));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	spin_lock_bh(&rwnx_hw->pcidev->ws_lock);
 	if(pci_ws != NULL){
 		__pm_stay_awake(pci_ws);
 	}
 	spin_unlock_bh(&rwnx_hw->pcidev->ws_lock);
-#endif
 }
 
 void rwnx_pm_relax_pc(struct rwnx_hw *rwnx_hw)
@@ -49,30 +45,24 @@ void rwnx_pm_relax_pc(struct rwnx_hw *rwnx_hw)
 	printk("%s\n", __func__);
 
 	//pm_relax(&(rwnx_hw->pcidev->pci_dev->dev));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	spin_lock_bh(&rwnx_hw->pcidev->ws_lock);
 	if(pci_ws != NULL){
 		__pm_relax(pci_ws);
 	}
 	spin_unlock_bh(&rwnx_hw->pcidev->ws_lock);
-#endif
 }
 
 static void register_ws(void)
 {
 	printk("%s\n", __func__);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	pci_ws = wakeup_source_register("wifisleep");
-#endif
 }
 
 static void unregister_ws(void)
 {
 	printk("%s\n", __func__);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0)
 	wakeup_source_unregister(pci_ws);
-#endif
 }
 #endif
 
@@ -177,17 +167,9 @@ void aicwf_netif_worker(struct work_struct *work)
 	pcidev->net_stop = false;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-static void aicwf_netif_timer(ulong data)
-#else
 static void aicwf_netif_timer(struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		struct aic_pci_dev *pcidev = (struct aic_pci_dev *) data;
-#else
 		struct aic_pci_dev *pcidev = timer_container_of(pcidev, t, netif_timer);
-#endif
 
 	if (!work_pending(&pcidev->netif_work))
 		schedule_work(&pcidev->netif_work);
@@ -233,17 +215,9 @@ void aicwf_temp_ctrl_worker(struct work_struct *work)
 	return;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-static void aicwf_temp_ctrl_timer(ulong data)
-#else
 static void aicwf_temp_ctrl_timer(struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	struct aic_pci_dev *pcidev = (struct aic_pci_dev *) data;
-#else
 	struct aic_pci_dev *pcidev = timer_container_of(pcidev, t, tp_ctrl_timer);
-#endif
 
 	if (!work_pending(&pcidev->tp_ctrl_work))
 		schedule_work(&pcidev->tp_ctrl_work);
@@ -863,7 +837,7 @@ static void aicwf_pcie_remove(struct pci_dev *pci_dev)
     bus_if->state = BUS_DOWN_ST;
     rwnx_cmd_mgr_deinit(&bus_if->bus_priv.pci->cmd_mgr);
 
-#if (defined(CONFIG_NO_FIRMWARE_RELOAD) || defined(CONFIG_LOWPOWER))
+#if (defined(CONFIG_NO_FIRMWARE_RELOAD)) || (defined(CONFIG_LOWPOWER))
     if(testmode == 1)
         writel(0, pci->pci_bar1_vaddr + 0x500010);
 #endif
@@ -947,15 +921,11 @@ static int aicwf_pcie_suspend(struct pci_dev *pdev, pm_message_t state)
 	spin_lock_bh(&rwnx_hw->cb_lock);
 	if (rwnx_hw->scan_request) {// && rwnx_hw->scan_request->wdev == &rwnx_vif->wdev) {
 //		printk("suspend scan_done\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 		struct cfg80211_scan_info info =
 		{
 			.aborted = true,
 		};
 		cfg80211_scan_done (rwnx_hw->scan_request, &info);
-#else
-		cfg80211_scan_done (rwnx_hw->scan_request, true);
-#endif
 		printk("suspend scan_done\n");
 		rwnx_hw->scan_request = NULL;
 		scanning = 0;
@@ -996,15 +966,7 @@ static int aicwf_pcie_resume(struct pci_dev *pdev)
 		return ret;
 	}
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 37))
 	pci_restore_state(pdev);
-#else
-	ret = pci_restore_state(pdev);
-	if (ret) {
-		printk("failed on pci_restore_state %d\n", ret);
-		return ret;
-	}
-#endif
 
 	fw_started = *(volatile u32 *) (g_rwnx_plat->pcidev->pci_bar0_vaddr + 0x120000) == 0x1a2000;
 
@@ -1193,15 +1155,8 @@ int aicwf_pcie_bus_init(struct aic_pci_dev *pciedev)
     pciedev->rx_priv = rx_priv;
 
 #ifdef CONFIG_TEMP_CONTROL
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	pciedev->tp_ctrl_timer.data = (ulong) pciedev;
-	pciedev->tp_ctrl_timer.function = aicwf_temp_ctrl_timer;
-	pciedev->netif_timer.data = (ulong) pciedev;
-	pciedev->netif_timer.function = aicwf_netif_timer;
-#else
 	timer_setup(&pciedev->tp_ctrl_timer, aicwf_temp_ctrl_timer, 0);
 	timer_setup(&pciedev->netif_timer, aicwf_netif_timer, 0);
-#endif
 	INIT_WORK(&pciedev->tp_ctrl_work, aicwf_temp_ctrl_worker);
 	INIT_WORK(&pciedev->netif_work, aicwf_netif_worker);
 	mod_timer(&pciedev->tp_ctrl_timer, jiffies + msecs_to_jiffies(TEMP_GET_INTERVAL));
