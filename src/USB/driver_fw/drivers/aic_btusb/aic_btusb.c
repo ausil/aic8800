@@ -113,7 +113,7 @@ struct btusb_data {
     int tx_in_flight;
     spinlock_t txlock;
 	
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		spinlock_t rxlock;
 		struct sk_buff *evt_skb;
@@ -135,7 +135,7 @@ struct btusb_data {
     int suspend_count;
     uint16_t sco_handle;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
     int (*recv_bulk) (struct btusb_data * data, void *buffer, int count);
 #endif
@@ -150,9 +150,7 @@ struct btusb_data {
 #endif
     firmware_info *fw_info;
 };
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 1)
 static bool reset_on_close = 0;
-#endif
 
 
 #ifdef CONFIG_SUPPORT_VENDOR_APCF
@@ -189,20 +187,13 @@ static inline void set_dlfw_state_value(uint16_t change_value)
 
 static void aic_free( struct btusb_data *data)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 1)
-    kfree(data);
-#endif
     return;
 }
 
 static struct btusb_data *aic_alloc(struct usb_interface *intf)
 {
     struct btusb_data *data;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 1)
-    data = kzalloc(sizeof(*data), GFP_KERNEL);
-#else
     data = devm_kzalloc(&intf->dev, sizeof(*data), GFP_KERNEL);
-#endif
     return data;
 }
 
@@ -1516,13 +1507,6 @@ static long btchr_ioctl(struct file *file_p,unsigned int cmd, unsigned long arg)
 }
 
 #ifdef CONFIG_PLATFORM_UBUNTU//AIDEN
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)
-typedef u32		compat_uptr_t;
-static inline void __user *compat_ptr(compat_uptr_t uptr)
-{
-	return (void __user *)(unsigned long)uptr;
-}
-#endif
 #endif
 
 #ifdef CONFIG_COMPAT
@@ -1563,11 +1547,7 @@ static int btchr_init(void)
     init_waitqueue_head(&btchr_read_wait);
     init_waitqueue_head(&bt_dlfw_wait);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
     bt_char_class = class_create(BT_CHAR_DEVICE_NAME);
-#else
-    bt_char_class = class_create(THIS_MODULE, BT_CHAR_DEVICE_NAME);
-#endif
     if (IS_ERR(bt_char_class)) {
         AICBT_ERR("Failed to create bt char class");
         return PTR_ERR(bt_char_class);
@@ -2843,7 +2823,7 @@ struct aicbsp_info_t aicbsp_info = {
 #define FW_PATH_MAX 200
 
 char aic_fw_path[FW_PATH_MAX];
-#if (CONFIG_BLUEDROID == 0) || defined (CONFIG_PLATFORM_UBUNTU)
+#if (CONFIG_BLUEDROID == 0) || (defined (CONFIG_PLATFORM_UBUNTU))
 static const char* aic_default_fw_path = "/lib/firmware";
 #else
 static const char* aic_default_fw_path = "/vendor/etc/firmware";
@@ -3063,7 +3043,7 @@ static int aic_load_firmware(u8 ** fw_buf, const char *name, struct device *devi
         printk("%s: use customer define fw_path\n", __func__);
         len = snprintf(path, FW_PATH_MAX, "%s/%s", aic_fw_path, name);
     } else {
-#if (CONFIG_BLUEDROID == 0) || defined (CONFIG_PLATFORM_UBUNTU)
+#if (CONFIG_BLUEDROID == 0) || (defined (CONFIG_PLATFORM_UBUNTU))
         if (g_chipid == PRODUCT_ID_AIC8800DC) {
             len = snprintf(path, FW_PATH_MAX, "%s/%s/%s",aic_default_fw_path, "aic8800DC", name);
         } else if (g_chipid == PRODUCT_ID_AIC8800D80N) {
@@ -3122,11 +3102,7 @@ static int aic_load_firmware(u8 ** fw_buf, const char *name, struct device *devi
     }
 
 
-    #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
     rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-    #else
-    rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-    #endif
 
     if(size != rdlen){
             printk("%s: %s file rdlen invalid %d %d\n", __func__, name, (int)rdlen, size);
@@ -3784,7 +3760,7 @@ static void check_sco_event(struct urb *urb)
     }
 }
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 static inline void btusb_free_frags(struct btusb_data *data)
 {
@@ -4395,8 +4371,7 @@ done:
     kfree_skb(skb);
 }
 
-#if (CONFIG_BLUEDROID == 0)
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 0, 9)
+#if CONFIG_BLUEDROID == 0
 static int btusb_shutdown(struct hci_dev *hdev)
 {
 	struct sk_buff *skb;
@@ -4411,7 +4386,6 @@ static int btusb_shutdown(struct hci_dev *hdev)
 
     return 0;
 }
-#endif
 #endif //(CONFIG_BLUEDROID == 0)
 
 static int btusb_open(struct hci_dev *hdev)
@@ -4427,7 +4401,7 @@ static int btusb_open(struct hci_dev *hdev)
 
     data->intf->needs_remote_wakeup = 1;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 		//err = download_patch(data->fw_info,1);
 		printk(" download_patch %d", err);
 		if (err < 0) {
@@ -4574,7 +4548,7 @@ static int btusb_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
     if (!test_bit(HCI_RUNNING, &hdev->flags))
         return -EBUSY;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)
 	skb->dev = (void *)hdev;
 #endif
@@ -4699,16 +4673,6 @@ done:
     return err;
 }
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 4, 0)
-static void btusb_destruct(struct hci_dev *hdev)
-{
-    struct btusb_data *data = GET_DRV_DATA(hdev);
-
-    AICBT_DBG("%s: name %s", __func__, hdev->name);
-
-    kfree(data);
-}
-#endif
 
 static void btusb_notify(struct hci_dev *hdev, unsigned int evt)
 {
@@ -4902,7 +4866,7 @@ static int bt_pm_notify(struct notifier_block *notifier, ulong pm_event, void *u
         }
 #endif
         if (!device_may_wakeup(&udev->dev)) {
-#if (CONFIG_RESET_RESUME || CONFIG_BLUEDROID)
+#if (CONFIG_RESET_RESUME) || (CONFIG_BLUEDROID)
 #ifdef CONFIG_BT_WAKEUP_IN_PM
             set_bt_ad_filetr_en_param(fw_info);
 #endif//CONFIG_BT_WAKEUP_IN_PM
@@ -5099,7 +5063,7 @@ static int btusb_probe(struct usb_interface *intf, const struct usb_device_id *i
     init_usb_anchor(&data->isoc_anchor);
     init_usb_anchor(&data->deferred);
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		spin_lock_init(&data->rxlock);
 		data->recv_bulk = btusb_recv_bulk;
@@ -5153,26 +5117,16 @@ static int btusb_probe(struct usb_interface *intf, const struct usb_device_id *i
     hdev->flush    = btusb_flush;
     hdev->send     = btusb_send_frame;
     hdev->notify   = btusb_notify;
-#if (CONFIG_BLUEDROID == 0)
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 0, 9)
+#if CONFIG_BLUEDROID == 0
     hdev->shutdown = btusb_shutdown;
-#endif
 #endif //(CONFIG_BLUEDROIF == 0)
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 4, 0)
     hci_set_drvdata(hdev, data);
-#else
-    hdev->driver_data = data;
-    hdev->destruct = btusb_destruct;
-    hdev->owner = THIS_MODULE;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 1)
     if (!reset_on_close){
         /* set_bit(HCI_QUIRK_RESET_ON_CLOSE, &hdev->quirks); */
         AICBT_DBG("%s: Set HCI_QUIRK_RESET_ON_CLOSE", __func__);
     }
-#endif
 
     /* Interface numbers are hardcoded in the specification */
     data->isoc = usb_ifnum_to_if(data->udev, 1);
@@ -5283,10 +5237,7 @@ static void btusb_disconnect(struct usb_interface *intf)
     else if (data->isoc)
         usb_driver_release_interface(&btusb_driver, data->isoc);
 
-#if !CONFIG_BLUEDROID
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 4, 0)
-    __hci_dev_put(hdev);
-#endif
+#if !(CONFIG_BLUEDROID)
 #endif
 
     hci_free_dev(hdev);
@@ -5463,9 +5414,7 @@ static struct usb_driver btusb_driver = {
 #endif
     .id_table    = btusb_table,
     .supports_autosuspend = 1,
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 7, 1)
     .disable_hub_initiated_lpm = 1,
-#endif
 };
 
 static int __init btusb_init(void)
@@ -5509,11 +5458,7 @@ module_exit(btusb_exit);
 module_param(mp_drv_mode, int, 0644);
 MODULE_PARM_DESC(mp_drv_mode, "0: NORMAL; 1: MP MODE");
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
-MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif
 
 MODULE_AUTHOR("AicSemi Corporation");
 MODULE_DESCRIPTION("AicSemi Bluetooth USB driver version");

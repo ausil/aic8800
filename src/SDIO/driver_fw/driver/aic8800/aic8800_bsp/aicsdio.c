@@ -202,7 +202,7 @@ int aicbsp_set_subsys(int subsys, int state)
 			if(!fdrv_no_reg_sdio)
 				aicbsp_sdio_release(aicbsp_sdiodev);
 
-#if defined CONFIG_PLATFORM_ROCKCHIP || defined CONFIG_PLATFORM_ROCKCHIP2
+#if (defined CONFIG_PLATFORM_ROCKCHIP) || (defined CONFIG_PLATFORM_ROCKCHIP2)
 #ifdef CONFIG_GPIO_WAKEUP
 			//BT_SLEEP:true,BT_WAKEUP:false
 			rfkill_rk_sleep_bt(true);
@@ -462,7 +462,7 @@ static int aicbsp_sdio_suspend(struct device *dev)
 	int err;
 	mmc_pm_flag_t sdio_flags;
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_GPIO_WAKEUP
     //BT_SLEEP:true,BT_WAKEUP:false
     rfkill_rk_sleep_bt(false);
@@ -494,7 +494,7 @@ static int aicbsp_sdio_suspend(struct device *dev)
 		return err;
 	}
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_GPIO_WAKEUP
 		//BT_SLEEP:true,BT_WAKEUP:false
 		rfkill_rk_sleep_bt(true);
@@ -509,7 +509,7 @@ static int aicbsp_sdio_resume(struct device *dev)
 {
 	sdio_dbg("%s\n", __func__);
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_GPIO_WAKEUP
 		//BT_SLEEP:true,BT_WAKEUP:false
 		rfkill_rk_sleep_bt(false);

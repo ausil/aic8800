@@ -846,7 +846,7 @@ void aicwf_sdio_remove_(struct sdio_func *func){
     aicwf_sdio_remove(func);
 }
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_SHUTDOWN_CALLBACK
 int rwnx_close_(struct net_device *dev);
 
@@ -931,7 +931,7 @@ static int aicwf_sdio_suspend(struct device *dev)
 	cancel_work_sync(&sdiodev->netif_work);
 #endif
 
-#if (defined(CONFIG_AUTO_POWERSAVE) && defined(CONFIG_SDIO_PWRCTRL))
+#if (defined(CONFIG_AUTO_POWERSAVE)) && (defined(CONFIG_SDIO_PWRCTRL))
         aicwf_sdio_pwr_stctl(sdiodev, SDIO_ACTIVE_ST);
 
         if((sdiodev->chipid == PRODUCT_ID_AIC8800D80) ||
@@ -946,7 +946,7 @@ static int aicwf_sdio_suspend(struct device *dev)
         }
 #endif
 
-    #if (!defined(CONFIG_AUTO_POWERSAVE))
+    #if !(defined(CONFIG_AUTO_POWERSAVE))
 	while (sdiodev->state == SDIO_ACTIVE_ST) {
 		if (down_interruptible(&sdiodev->tx_priv->txctl_sema))
 			continue;
@@ -966,7 +966,7 @@ static int aicwf_sdio_suspend(struct device *dev)
 #endif
 
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 	if(sdiodev->chipid == PRODUCT_ID_AIC8801){
 		sdio_dbg("%s SDIOWIFI_INTR_CONFIG_REG Disable\n", __func__);
 		sdio_claim_host(sdiodev->func);
@@ -1012,7 +1012,7 @@ static int aicwf_sdio_resume(struct device *dev)
 	struct aicwf_bus *bus_if = dev_get_drvdata(dev);
 	struct aic_sdio_dev *sdiodev = bus_if->bus_priv.sdio;
 	struct rwnx_vif *rwnx_vif, *tmp;
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2) || defined(CONFIG_AUTO_POWERSAVE)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2)) || (defined(CONFIG_AUTO_POWERSAVE))
 	int ret;
 #endif
 
@@ -1035,7 +1035,7 @@ static int aicwf_sdio_resume(struct device *dev)
 	aicwf_sdio_pwr_stctl(sdiodev, SDIO_ACTIVE_ST);
 	#endif
 
-#if defined(CONFIG_AUTO_POWERSAVE) && defined(CONFIG_SDIO_PWRCTRL)
+#if (defined(CONFIG_AUTO_POWERSAVE)) && (defined(CONFIG_SDIO_PWRCTRL))
     if(sdiodev->chipid == PRODUCT_ID_AIC8800D80 ||
 		(sdiodev->chipid == PRODUCT_ID_AIC8800D80N) ||
 		(sdiodev->chipid == PRODUCT_ID_AIC8800D80WN) ||
@@ -1050,7 +1050,7 @@ static int aicwf_sdio_resume(struct device *dev)
 
 //	aicwf_sdio_hal_irqhandler(sdiodev->func);
 
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 	if(sdiodev->chipid == PRODUCT_ID_AIC8801){
 		sdio_dbg("%s SDIOWIFI_INTR_CONFIG_REG Enable\n", __func__);
 		sdio_claim_host(sdiodev->func);
@@ -1102,7 +1102,7 @@ static struct sdio_driver aicwf_sdio_driver = {
 	.id_table = aicwf_sdmmc_ids,
 	.drv = {
 		.pm = &aicwf_sdio_pm_ops,
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_SHUTDOWN_CALLBACK
 		.shutdown = aicwf_sdio_shutdown,
 #endif
@@ -3360,17 +3360,10 @@ static ssize_t rwnx_wifi_suspend_write_proc(struct file *file,
 	return count;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 6, 0)
 static const struct proc_ops wifi_suspend_fops = {
 	//.owner		= THIS_MODULE,
 	.proc_write 	= rwnx_wifi_suspend_write_proc,
 };
-#else
-static const struct file_operations wifi_suspend_fops = {
-	.owner		= THIS_MODULE,
-	.write		= rwnx_wifi_suspend_write_proc,
-};
-#endif
 
 void rwnx_init_wifi_suspend_node(void){
 	struct proc_dir_entry *ent;

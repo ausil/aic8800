@@ -35,11 +35,7 @@
 
 #include <linux/version.h>
 #include <linux/types.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 #include <linux/bits.h>
-#else
-#include <linux/bitops.h>
-#endif
 
 #ifdef CONFIG_RWNX_TL4
 typedef uint16_t u8_l;

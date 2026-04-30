@@ -22,9 +22,6 @@
 #ifdef __KERNEL__
 	#include <linux/if_arp.h>
 	#include <net/ip.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-	#include <net/ipx.h>
-#endif
 	#include <linux/atalk.h>
 	#include <linux/udp.h>
 	#include <linux/if_pppox.h>
@@ -36,11 +33,7 @@
 		#include <linux/ipv6.h>
 		#include <linux/icmpv6.h>
 		#include <net/ndisc.h>
-		#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24))
 			#include <net/ip6_checksum.h>
-		#else
-			#include <net/checksum.h>
-		#endif
 	#endif
 #endif
 
@@ -897,32 +890,13 @@ int nat25_db_handle(struct rwnx_vif *vif, struct sk_buff *skb, int method)
 	/*         Handle IPX and Apple Talk frame          */
 	/*---------------------------------------------------*/
 	else if (
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-		(protocol == __constant_htons(ETH_P_IPX)) ||
-#endif
 		 (protocol == __constant_htons(ETH_P_ATALK)) ||
 		 (protocol == __constant_htons(ETH_P_AARP))) {
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-		unsigned char ipx_header[2] = {0xFF, 0xFF};
-		struct ipxhdr	*ipx = NULL;
-#endif
 		struct elapaarp	*ea = NULL;
 		struct ddpehdr	*ddp = NULL;
 		unsigned char *framePtr = skb->data + ETH_HLEN;
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-		if (protocol == __constant_htons(ETH_P_IPX)) {
-			printk("NAT25: Protocol=IPX (Ethernet II)\n");
-			ipx = (struct ipxhdr *)framePtr;
-		} else
-#endif
 		{ /* if(protocol <= __constant_htons(ETH_FRAME_LEN)) */
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-			if (!memcmp(ipx_header, framePtr, 2)) {
-				printk("NAT25: Protocol=IPX (Ethernet 802.3)\n");
-				ipx = (struct ipxhdr *)framePtr;
-			} else
-#endif
 			{
 				unsigned char ipx_8022_type =  0xE0;
 				unsigned char snap_8022_type = 0xAA;
@@ -933,14 +907,6 @@ int nat25_db_handle(struct rwnx_vif *vif, struct sk_buff *skb, int method)
 					unsigned char ddp_snap_id[5] = {0x08, 0x00, 0x07, 0x80, 0x9B};	/* Apple Talk DDP SNAP ID */
 
 					framePtr += 3;	/* eliminate the 802.2 header */
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-					if (!memcmp(ipx_snap_id, framePtr, 5)) {
-						framePtr += 5;	/* eliminate the SNAP header */
-
-						printk("NAT25: Protocol=IPX (Ethernet SNAP)\n");
-						ipx = (struct ipxhdr *)framePtr;
-					} else
-#endif
 					if (!memcmp(aarp_snap_id, framePtr, 5)) {
 						framePtr += 5;	/* eliminate the SNAP header */
 
@@ -955,89 +921,9 @@ int nat25_db_handle(struct rwnx_vif *vif, struct sk_buff *skb, int method)
 						return -1;
 					}
 				}
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-					else if (*framePtr == ipx_8022_type) {
-					framePtr += 3;	/* eliminate the 802.2 header */
-
-					if (!memcmp(ipx_header, framePtr, 2)) {
-						printk("NAT25: Protocol=IPX (Ethernet 802.2)\n");
-						ipx = (struct ipxhdr *)framePtr;
-					} else
-						return -1;
-				}
-#endif
 			}
 		}
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(5, 15, 0)
-		/*   IPX  */
-		if (ipx != NULL) {
-			switch (method) {
-			case NAT25_CHECK:
-				if (!memcmp(skb->data + ETH_ALEN, ipx->ipx_source.node, ETH_ALEN)) {
-					printk("NAT25: Check IPX skb_copy\n");
-					return 0;
-				}
-				return -1;
-
-			case NAT25_INSERT: {
-				printk("NAT25: Insert IPX, Dest=%08x,%02x%02x%02x%02x%02x%02x,%04x Source=%08x,%02x%02x%02x%02x%02x%02x,%04x\n",
-					 ipx->ipx_dest.net,
-					 ipx->ipx_dest.node[0],
-					 ipx->ipx_dest.node[1],
-					 ipx->ipx_dest.node[2],
-					 ipx->ipx_dest.node[3],
-					 ipx->ipx_dest.node[4],
-					 ipx->ipx_dest.node[5],
-					 ipx->ipx_dest.sock,
-					 ipx->ipx_source.net,
-					 ipx->ipx_source.node[0],
-					 ipx->ipx_source.node[1],
-					 ipx->ipx_source.node[2],
-					 ipx->ipx_source.node[3],
-					 ipx->ipx_source.node[4],
-					 ipx->ipx_source.node[5],
-					 ipx->ipx_source.sock);
-
-				if (!memcmp(skb->data + ETH_ALEN, ipx->ipx_source.node, ETH_ALEN)) {
-					printk("NAT25: Use IPX Net, and Socket as network addr\n");
-
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
-
-					/* change IPX source node addr to wlan STA address */
-					memcpy(ipx->ipx_source.node, vif->ndev->dev_addr, ETH_ALEN);
-				} else
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
-
-				__nat25_db_network_insert(vif, skb->data + ETH_ALEN, networkAddr);
-
-				__nat25_db_print(vif);
-			}
-			return 0;
-
-			case NAT25_LOOKUP: {
-				if (!memcmp(vif->ndev->dev_addr, ipx->ipx_dest.node, ETH_ALEN)) {
-					printk("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
-
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
-
-					__nat25_db_network_lookup_and_replace(vif, skb, networkAddr);
-
-					/* replace IPX destination node addr with Lookup destination MAC addr */
-					memcpy(ipx->ipx_dest.node, skb->data, ETH_ALEN);
-				} else {
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
-
-					__nat25_db_network_lookup_and_replace(vif, skb, networkAddr);
-				}
-			}
-			return 0;
-
-			default:
-				return -1;
-			}
-		}else
-#endif
 
 		/*   AARP  */
 		if (ea != NULL) {

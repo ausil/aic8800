@@ -18,9 +18,7 @@
 #include <linux/vmalloc.h>
 #include <linux/version.h>
 #ifdef CONFIG_PLATFORM_UBUNTU
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 10, 0)
 #include <linux/sched/signal.h>
-#endif
 #endif
 #include "aic_txrxif.h"
 #include "aicbluetooth.h"
@@ -36,12 +34,8 @@ int aicwf_bus_init(uint bus_hdrlen, struct device *dev)
         return -1;
     }
     bus_if = dev_get_drvdata(dev);
-    #if defined CONFIG_USB_SUPPORT && defined CONFIG_USB_NO_TRANS_DMA_MAP
-    #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
+    #if (defined CONFIG_USB_SUPPORT) && (defined CONFIG_USB_NO_TRANS_DMA_MAP)
     bus_if->cmd_buf = usb_alloc_coherent(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &bus_if->bus_priv.usb->cmd_dma_trans_addr);
-    #else
-    bus_if->cmd_buf = usb_buffer_alloc(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, (in_interrupt() ? GFP_ATOMIC : GFP_KERNEL), &bus_if->bus_priv.usb->cmd_dma_trans_addr);
-    #endif
     #else
     bus_if->cmd_buf = kzalloc(CMD_BUF_MAX, GFP_KERNEL);
     #endif
@@ -102,12 +96,8 @@ void aicwf_bus_deinit(struct device *dev)
     aic_bt_platform_deinit(usbdev);
 
     if (bus_if->cmd_buf) {
-        #if defined CONFIG_USB_SUPPORT && defined CONFIG_USB_NO_TRANS_DMA_MAP
-        #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
+        #if (defined CONFIG_USB_SUPPORT) && (defined CONFIG_USB_NO_TRANS_DMA_MAP)
         usb_free_coherent(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, bus_if->cmd_buf, bus_if->bus_priv.usb->cmd_dma_trans_addr);
-        #else
-        usb_buffer_free(bus_if->bus_priv.usb->udev, CMD_BUF_MAX, bus_if->cmd_buf, bus_if->bus_priv.usb->cmd_dma_trans_addr);
-        #endif
         #else
         kfree(bus_if->cmd_buf);
         #endif

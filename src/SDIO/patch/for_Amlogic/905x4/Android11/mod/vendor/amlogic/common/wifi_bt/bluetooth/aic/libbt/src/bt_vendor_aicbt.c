@@ -36,7 +36,7 @@
 #define BTVND_DBG FALSE
 #endif
 
-#if (BTVND_DBG == TRUE)
+#if BTVND_DBG == TRUE
 #define BTVNDDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define BTVNDDBG(param, ...) {}
@@ -53,15 +53,15 @@ uint8_t hw_lpm_enable(uint8_t turn_on);
 uint32_t hw_lpm_get_idle_timeout(void);
 void hw_lpm_set_wake_state(uint8_t wake_assert);
 void hw_bt_assert_notify(void *p_mem);
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
 void hw_sco_config(void);
 #endif
 void vnd_load_conf(const char *p_path);
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 void hw_epilog_process(void);
 #endif
 
-#if (AICBT_A2DP_OFFLOAD == TRUE)
+#if AICBT_A2DP_OFFLOAD == TRUE
 void aicbt_vnd_a2dp_init(bt_vendor_callbacks_t *callback);
 int aicbt_vnd_a2dp_execute(bt_vendor_opcode_t, void *ev_data);
 #endif
@@ -105,7 +105,7 @@ static int init(const bt_vendor_callbacks_t* p_cb, unsigned char *local_bdaddr)
         return -1;
     }
 
-#if (VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE)
+#if VENDOR_LIB_RUNTIME_TUNING_ENABLED == TRUE
     ALOGW("*****************************************************************");
     ALOGW("*****************************************************************");
     ALOGW("** Warning - BT Vendor Lib is loaded in debug tuning mode!");
@@ -129,7 +129,7 @@ static int init(const bt_vendor_callbacks_t* p_cb, unsigned char *local_bdaddr)
     /* This is handed over from the stack */
     memcpy(vnd_local_bd_addr, local_bdaddr, 6);
 
-#if (AICBT_A2DP_OFFLOAD == TRUE)
+#if AICBT_A2DP_OFFLOAD == TRUE
     aicbt_vnd_a2dp_init(bt_vendor_cbacks);
 #endif
 	//if want to send apcf command when support platform, 
@@ -171,7 +171,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
 
         case BT_VND_OP_SCO_CFG:
             {
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
                 hw_sco_config();
 #else
                 retval = -1;
@@ -233,7 +233,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
 
         case BT_VND_OP_EPILOG:
             {
-#if (HW_END_WITH_HCI_RESET == FALSE)
+#if HW_END_WITH_HCI_RESET == FALSE
                 if (bt_vendor_cbacks) {
                     bt_vendor_cbacks->epilog_cb(BT_VND_OP_RESULT_SUCCESS);
                 }
@@ -242,7 +242,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
 #endif
             }
             break;
-#if (AICBT_A2DP_OFFLOAD == TRUE)
+#if AICBT_A2DP_OFFLOAD == TRUE
         case BT_VND_OP_A2DP_OFFLOAD_START:
         case BT_VND_OP_A2DP_OFFLOAD_STOP:
             retval = aicbt_vnd_a2dp_execute(opcode, param);

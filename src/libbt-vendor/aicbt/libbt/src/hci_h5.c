@@ -1864,7 +1864,7 @@ static int create_data_retransfer_thread()
     if (pthread_getschedparam(hc_cb.worker_thread, &policy, &param) == 0) {
         policy = BTHC_LINUX_BASE_POLICY;
 
-#if (BTHC_LINUX_BASE_POLICY!=SCHED_NORMAL)
+#if BTHC_LINUX_BASE_POLICY!=SCHED_NORMAL
         param.sched_priority = BTHC_MAIN_THREAD_PRIORITY;
 #endif
         result = pthread_setschedparam(hc_cb.worker_thread, policy, &param);

@@ -173,9 +173,9 @@ struct hci_rf_calib_req_cmd rf_calib_req_bt_combo = {AIC_RF_MODE_BT_COMBO, 0x000
 
 bt_hw_cfg_cb_t hw_cfg_cb;
 
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
 
-#if defined(SCO_CODEC_NONE) && defined(SCO_CODEC_CVSD) && SCO_CODEC_MSBC
+#if (defined(SCO_CODEC_NONE)) && (defined(SCO_CODEC_CVSD)) && (SCO_CODEC_MSBC)
 #include "esco_parameters.h"
 #else
 #define SCO_CODEC_NONE 0x0000
@@ -232,7 +232,7 @@ static uint8_t bt_sco_i2spcm_param[SCO_I2SPCM_PARAM_SIZE] = {
  *     And, PCM interface will be set as the default bus format running over I2S/PCM
  *     port.
  */
-#if (defined(SCO_USE_I2S_INTERFACE) && SCO_USE_I2S_INTERFACE == TRUE)
+#if (defined(SCO_USE_I2S_INTERFACE)) && (SCO_USE_I2S_INTERFACE == TRUE)
 static uint8_t sco_bus_interface = SCO_INTERFACE_I2S;
 #else
 static uint8_t sco_bus_interface = SCO_INTERFACE_PCM;
@@ -709,7 +709,7 @@ uint8_t hw_set_assert_resume(HC_BT_HDR *p_buf){
         UINT16_TO_STREAM(p, AICBT_CONFIG_ID_ASSERT_RESUME_SET);
         /*config len*/
         UINT16_TO_STREAM(p, AICBT_CONFIG_ID_ASSERT_RESUME_SET_SIZE);
-#if (ASSERT_RESUME == TRUE)
+#if ASSERT_RESUME == TRUE
         *p++ = 0x01;
 #else
         *p++ = 0x00;
@@ -853,7 +853,7 @@ uint8_t hw_config_set_bdaddr(HC_BT_HDR *p_buf)
     return (retval);
 }
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 /*******************************************************************************
 **
 ** Function         hw_config_read_bdaddr
@@ -900,7 +900,7 @@ uint8_t hw_read_local_features(HC_BT_HDR *p_buf)
 }
 
 
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
 /*****************************************************************************
 **   SCO Configuration Static Functions
 *****************************************************************************/
@@ -1271,7 +1271,7 @@ uint8_t get_heartbeat_from_hardware()
 ******************************************************************************/
 
 
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 /******************************************************************************
 *
 **

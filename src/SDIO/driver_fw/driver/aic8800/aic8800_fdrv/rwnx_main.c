@@ -427,14 +427,6 @@ rwnx_default_mgmt_stypes[NUM_NL80211_IFTYPES] = {
 	},
 };
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
-#define WLAN_CIPHER_SUITE_GCMP_256	0x000FAC09
-#define WLAN_CIPHER_SUITE_CCMP_256	0x000FAC0A
-#define WLAN_CIPHER_SUITE_BIP_GMAC_128	0x000FAC0B
-#define WLAN_CIPHER_SUITE_BIP_GMAC_256	0x000FAC0C
-#define WLAN_CIPHER_SUITE_BIP_CMAC_256	0x000FAC0D
-#define WLAN_CIPHER_SUITE_SMS4		0x00147201
-#endif
 
 static u32 cipher_suites[] = {
 	WLAN_CIPHER_SUITE_WEP40,
@@ -770,12 +762,7 @@ static void rwnx_csa_finish(struct work_struct *ws)
 			rwnx_txq_vif_stop(vif, RWNX_TXQ_STOP_CHAN, rwnx_hw);
 		spin_unlock_bh(&rwnx_hw->cb_lock);
 		cfg80211_ch_switch_notify(vif->ndev, &csa->chandef, 0);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0))
 		wiphy_unlock(rwnx_hw->wiphy);
-#else
-		mutex_unlock(&vif->wdev.mtx);
-		__release(&vif->wdev.mtx);
-#endif
 	}
 	rwnx_del_csa(vif);
 }
@@ -890,17 +877,9 @@ finish:
 	mod_timer(&rwnx_vif->steer_timer, jiffies + msecs_to_jiffies(STEER_UPFATE_TIME));
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void aicwf_steering_timeout(ulong data)
-#else
 void aicwf_steering_timeout(struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	struct rwnx_vif *rwnx_vif = (struct rwnx_vif *)data;
-#else
 	struct rwnx_vif *rwnx_vif = container_of(t, struct rwnx_vif, steer_timer);
-#endif
 
 	if (rwnx_vif->up == false) {
 		AICWFDBG(LOGERROR, "%s vif is down\n", __func__);
@@ -1184,7 +1163,7 @@ static int rwnx_close(struct net_device *dev)
 		}
 	}
 
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 	if (scanning) {
 		scanning = false;
 	}
@@ -1325,7 +1304,7 @@ static int rwnx_close(struct net_device *dev)
 	return 0;
 }
     
-#if defined(CONFIG_PLATFORM_ROCKCHIP) || defined(CONFIG_PLATFORM_ROCKCHIP2)
+#if (defined(CONFIG_PLATFORM_ROCKCHIP)) || (defined(CONFIG_PLATFORM_ROCKCHIP2))
 #ifdef CONFIG_SHUTDOWN_CALLBACK
 int rwnx_close_(struct net_device *dev){
 	return rwnx_close(dev);
@@ -3266,13 +3245,7 @@ static int rwnx_cfg80211_start_ap(struct wiphy *wiphy, struct net_device *dev,
 
 #ifdef CONFIG_BAND_STEERING
 	if (!error) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		init_timer(&rwnx_vif->steer_timer);
-		rwnx_vif->steer_timer.data = (ulong)rwnx_vif;
-		rwnx_vif->steer_timer.function = aicwf_steering_timeout;
-#else
 		timer_setup(&rwnx_vif->steer_timer, aicwf_steering_timeout, 0);
-#endif
 		aicwf_nl_hook(rwnx_vif, rwnx_vif->ap.band, rwnx_vif->rwnx_hw->iface_idx);
 		
 		INIT_WORK(&rwnx_vif->steer_work, aicwf_steering_work);
@@ -3303,13 +3276,8 @@ end:
  * @change_beacon: Change the beacon parameters for an access point mode
  *	interface. This should reject the call when AP mode wasn't started.
  */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 7, 0)
 static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev,
                                        struct cfg80211_ap_update *info)
-#else
-static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev,
-                                       struct cfg80211_beacon_data *info)
-#endif
 {
 	struct rwnx_hw *rwnx_hw = wiphy_priv(wiphy);
 	struct rwnx_vif *vif = netdev_priv(dev);
@@ -3322,11 +3290,7 @@ static int rwnx_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *d
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
 	// Build the beacon
-#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 7, 0)
 	buf = rwnx_build_bcn(bcn, &info->beacon);
-#else
-	buf = rwnx_build_bcn(bcn, info);
-#endif
 
 	if (!buf)
 		return -ENOMEM;
@@ -3992,12 +3956,8 @@ static
 int rwnx_cfg80211_start_radar_detection(struct wiphy *wiphy,
 										struct net_device *dev,
 										struct cfg80211_chan_def *chandef
-									#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 										, u32 cac_time_ms
-									#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0))
 										, int link_id
-#endif
 									)
 {
 	struct rwnx_hw *rwnx_hw = wiphy_priv(wiphy);
@@ -4006,9 +3966,7 @@ int rwnx_cfg80211_start_radar_detection(struct wiphy *wiphy,
 
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 	rwnx_radar_start_cac(&rwnx_hw->radar, cac_time_ms, rwnx_vif);
-	#endif
 	rwnx_send_apm_start_cac_req(rwnx_hw, rwnx_vif, chandef, &cfm);
 
 	if (cfm.status == CO_OK) {
@@ -4137,17 +4095,7 @@ int rwnx_cfg80211_channel_switch (struct wiphy *wiphy,
 		goto end;
 	} else {
 		INIT_WORK(&csa->work, rwnx_csa_finish);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
 		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false);
-#elif LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION4
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false, 0);
-#elif LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION2
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, 0, params->count, false);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, params->count, params->block_tx);
-#else
-		cfg80211_ch_switch_started_notify(dev, &csa->chandef, params->count);
-#endif
 
 	}
 
@@ -4168,9 +4116,7 @@ static int
 rwnx_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 	struct net_device *dev,
 	const u8 *peer,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
 	int link_id,
-#endif
 	u8 action_code,
 	u8 dialog_token,
 	u16 status_code,
@@ -5131,7 +5077,6 @@ static void rwnx_reg_notifier(struct wiphy *wiphy,
 	if (!rwnx_hw->mod_params->custregd) {
 		AICWFDBG(LOGINFO, "regulatory domain set to %c%c, initiator: %d\n", alpha2[0], alpha2[1], initiator);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0)
 		if (rwnx_hw->last_alpha2[0]) {
 			s64 delta = ktime_ms_delta(now, rwnx_hw->last_time);
 			if (delta < 0 || delta > INT_MAX)
@@ -5141,7 +5086,6 @@ static void rwnx_reg_notifier(struct wiphy *wiphy,
 				return;
 			}
 		}
-#endif
 
 		regulatory_hint(wiphy, alpha2);
 		memcpy(rwnx_hw->last_alpha2, request->alpha2, 2);
@@ -5317,10 +5261,8 @@ extern int get_custom_mac_address(int fmt, char *name, char *addr);
 
 
 #ifdef CONFIG_PLATFORM_AMLOGIC
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0))
 #include <linux/amlogic/aml_gpio_consumer.h>
 extern u8 *wifi_get_mac(void);
-#endif
 #endif
 
 #ifdef CONFIG_DYNAMIC_PWR
@@ -5388,20 +5330,11 @@ void set_txpwrloss_ctrl(struct rwnx_hw *rwnx_hw, s8 value)
 	}
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-static void aicwf_pwrloss_timer(ulong data)
-#else
 static void aicwf_pwrloss_timer(struct timer_list *t)
-#endif
 {
 	struct rwnx_hw *rwnx_hw;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	rwnx_vif = (struct rwnx_vif *)data;
-	rwnx_hw = rwnx_vif->rwnx_hw;
-#else
 	rwnx_hw = from_timer(rwnx_hw, t, pwrloss_timer);
-#endif
 	if (!work_pending(&rwnx_hw->pwrloss_work))
 		schedule_work(&rwnx_hw->pwrloss_work);
 	return;
@@ -5879,13 +5812,7 @@ int rwnx_cfg80211_init(struct rwnx_plat *rwnx_plat, void **platform_data)
 	rwnx_hw->pwrloss_lvl = 0;
 	rwnx_hw->sta_rssi_idx = 0;
 	rwnx_hw->read_rssi_vif = vif;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	init_timer(&rwnx_hw->pwrloss_timer);
-	rwnx_hw->pwrloss_timer.data = (ulong) vif;
-	rwnx_hw->pwrloss_timer.function = aicwf_pwrloss_timer;
-#else
 	timer_setup(&rwnx_hw->pwrloss_timer, aicwf_pwrloss_timer, 0);
-#endif
 	INIT_WORK(&rwnx_hw->pwrloss_work, aicwf_pwrloss_worker);
 	mod_timer(&rwnx_hw->pwrloss_timer, jiffies + msecs_to_jiffies(RSSI_GET_INTERVAL));
 #endif

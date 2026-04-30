@@ -1328,7 +1328,7 @@ uint32_t agc_cfg_ram[] = {
     0x00000000
 };
 
-#if !defined(CONFIG_EXT_FEM_8800DCDW)
+#if !(defined(CONFIG_EXT_FEM_8800DCDW))
 uint32_t txgain_map[96] =  {
 #ifdef CONFIG_FPGA_VERIFICATION
     0x20c0c971,
@@ -2219,7 +2219,7 @@ void aicwf_patch_config_8800dc(struct aic_sdio_dev *rwnx_hw)
             }
         }
 
-        #if !defined(CONFIG_FPGA_VERIFICATION)
+        #if !(defined(CONFIG_FPGA_VERIFICATION))
         if ((IS_CHIP_ID_H())) {
             #if defined(CONFIG_EXT_FEM_8800DCDW)
             txgain_cfg_size = sizeof(txgain_map_femkct_h);

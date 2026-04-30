@@ -1847,13 +1847,7 @@ void rwnx_probersp_work(struct work_struct *work)
 	memcpy (mgmt->da, rsp->da, ETH_ALEN);
 	rsp->in_use = false;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 	robust = ieee80211_is_robust_mgmt_frame(skb);
-#else
-	if (skb->len < 25)
-		robust = false;
-	robust = ieee80211_is_robust_mgmt_frame((void *)skb->data);
-#endif
 
 	sta = rwnx_retrieve_sta(rwnx_hw, rwnx_vif, mgmt->da, mgmt->frame_control, true);
 	if (sta) {

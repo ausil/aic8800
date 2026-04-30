@@ -7,7 +7,6 @@
 #undef NL80211_MCGRP_MLME
 #define NL80211_MCGRP_MLME 3
 //#if IS_ENABLED(CONFIG_GKI_OPT_FEATURES) && IS_ENABLED(CONFIG_ANDROID) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
 
 static struct genl_family rwnx_nl80211_fam;
 
@@ -79,7 +78,6 @@ bool rwnx_cfg80211_rx_unexpected_4addr_frame(struct net_device *dev,
 	return ret;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0))
 void rwnx_cfg80211_notify_new_peer_candidate(struct net_device *dev, const u8 *addr,
 				const u8 *ie, u8 ie_len,
 				int sig_dbm, gfp_t gfp)
@@ -121,7 +119,6 @@ void rwnx_cfg80211_notify_new_peer_candidate(struct net_device *dev, const u8 *a
  nla_put_failure:
 	nlmsg_free(msg);
 }
-#endif
 
 void rwnx_cfg80211_report_obss_beacon(struct wiphy *wiphy,
 				const u8 *frame, size_t len,
@@ -237,9 +234,7 @@ void rwnx_cfg80211_ch_switch_notify(struct cfg80211_registered_device *rdev,
 void rwnx_cfg80211_ch_switch_started_notify(struct net_device *dev,
 				struct cfg80211_chan_def *chandef,
 				u8 count
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 				, bool quiet
-	#endif
 				)
 {
 	struct wireless_dev *wdev = dev->ieee80211_ptr;
@@ -405,4 +400,3 @@ int rwnx_call_usermodehelper(const char *path, char **argv, char **envp, int wai
 	return -1;
 }
 
-#endif

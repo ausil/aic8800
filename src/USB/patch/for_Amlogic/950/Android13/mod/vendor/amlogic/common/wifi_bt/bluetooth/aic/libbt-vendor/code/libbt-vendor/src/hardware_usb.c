@@ -1129,7 +1129,7 @@ static uint8_t hw_config_set_bdaddr(HC_BT_HDR *p_buf)
     return (retval);
 }
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 /*******************************************************************************
 **
 ** Function         hw_config_read_bdaddr
@@ -1199,7 +1199,7 @@ void hw_usb_config_cback(void *p_mem)
     usb_patch_info* paic_usb_patch_file_info = NULL;
     //uint32_t    host_baudrate = 0;
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 	char *p_tmp;
 #endif
 
@@ -1230,7 +1230,7 @@ void hw_usb_config_cback(void *p_mem)
             {
                 ALOGE("HW_CFG_START 11");
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 				is_proceeding = hw_config_read_bdaddr(p_buf);
 
 #else
@@ -1493,7 +1493,7 @@ DOWNLOAD_USB_FW:
                                     hw_cfg_cb.patch_frag_len);
                 break;
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 				case HW_CFG_READ_BD_ADDR:
 							p_tmp = (char *) (p_evt_buf + 1) + \
 									 HCI_EVT_CMD_CMPL_LOCAL_BDADDR_ARRAY;

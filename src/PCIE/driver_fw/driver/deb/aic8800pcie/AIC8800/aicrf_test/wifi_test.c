@@ -219,7 +219,7 @@ int wifi_send_cmd_to_net_interface(const char* if_name, int argC, char *argV[])
 
     memcpy(&priv_cmd, ifr.ifr_data, sizeof(struct android_wifi_priv_cmd));
     if (strcasecmp(argV[2], "SET_FREQ_CAL") == 0) {
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done: freq_cal: 0x%8x\n", *(unsigned int *)priv_cmd.buf);
         #else
         signed char rem_cnt = (signed char)priv_cmd.buf[1];
@@ -230,7 +230,7 @@ int wifi_send_cmd_to_net_interface(const char* if_name, int argC, char *argV[])
         }
         #endif
     } else if (strcasecmp(argV[2], "SET_FREQ_CAL_FINE") == 0) {
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done: freq_cal_fine: 0x%8x\n", *(unsigned int *)priv_cmd.buf);
         #else
         signed char rem_cnt = (signed char)priv_cmd.buf[1];
@@ -252,26 +252,26 @@ int wifi_send_cmd_to_net_interface(const char* if_name, int argC, char *argV[])
         printf("done: get macaddr = %02x : %02x : %02x : %02x : %02x : %02x\n",
             *(unsigned char *)&priv_cmd.buf[5], *(unsigned char *)&priv_cmd.buf[4], *(unsigned char *)&priv_cmd.buf[3],
             *(unsigned char *)&priv_cmd.buf[2], *(unsigned char *)&priv_cmd.buf[1], *(unsigned char *)&priv_cmd.buf[0]);
-        #if (!EFUSE_CMD_OLD_FORMAT_EN)
+        #if !(EFUSE_CMD_OLD_FORMAT_EN)
         printf("  (remain:%x)\n", priv_cmd.buf[6]);
         #endif
     } else if (strcasecmp(argV[2], "GET_BT_MAC_ADDR") == 0) {
         printf("done: get bt macaddr = %02x : %02x : %02x : %02x : %02x : %02x\n",
             *(unsigned char *)&priv_cmd.buf[5], *(unsigned char *)&priv_cmd.buf[4], *(unsigned char *)&priv_cmd.buf[3],
             *(unsigned char *)&priv_cmd.buf[2], *(unsigned char *)&priv_cmd.buf[1], *(unsigned char *)&priv_cmd.buf[0]);
-        #if (!EFUSE_CMD_OLD_FORMAT_EN)
+        #if !(EFUSE_CMD_OLD_FORMAT_EN)
         printf("  (remain:%x)\n", priv_cmd.buf[6]);
         #endif
     } else if (strcasecmp(argV[2], "GET_FREQ_CAL") == 0) {
         unsigned int val = *(unsigned int *)&priv_cmd.buf[0];
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done: get_freq_cal: xtal_cap=0x%x, xtal_cap_fine=0x%x\n", val & 0x000000ff, (val >> 8) & 0x000000ff);
         #else
         printf("done: get_freq_cal: xtal_cap=0x%x (remain:%x), xtal_cap_fine=0x%x (remain:%x)\n",
                 val & 0xff, (val >> 8) & 0xff, (val >> 16) & 0xff, (val >> 24) & 0xff);
         #endif
     } else if (strcasecmp(argV[2], "GET_VENDOR_INFO") == 0) {
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done: get_vendor_info = 0x%x\n", *(unsigned char *)&priv_cmd.buf[0]);
         #else
         printf("done: get_vendor_info = 0x%x (remain:%x)\n", *(unsigned char *)&priv_cmd.buf[0], priv_cmd.buf[1]);
@@ -355,7 +355,7 @@ int wifi_send_cmd_to_net_interface(const char* if_name, int argC, char *argV[])
         }
     } else if (strcasecmp(argV[2], "RDWR_EFUSE_PWROFST") == 0) {
         char *buff = &priv_cmd.buf[0];
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done:\n"
                "efuse txpwr offset 2.4g:\n"
                "  [0]=%d(ch1~4)\n"
@@ -388,7 +388,7 @@ int wifi_send_cmd_to_net_interface(const char* if_name, int argC, char *argV[])
         }
         #endif
     } else if (strcasecmp(argV[2], "RDWR_EFUSE_DRVIBIT") == 0) {
-        #if (EFUSE_CMD_OLD_FORMAT_EN)
+        #if EFUSE_CMD_OLD_FORMAT_EN
         printf("done: efsue 2.4g txgain tbl pa drv_ibit: %x\n", priv_cmd.buf[0]);
         #else
         int val = *(int *)&priv_cmd.buf[0];

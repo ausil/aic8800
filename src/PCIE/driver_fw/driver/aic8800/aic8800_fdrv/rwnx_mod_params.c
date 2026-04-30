@@ -260,7 +260,6 @@ char country_code[4];
 module_param_string(country_code, country_code, 4, 0600);
 
 #if 0
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
 /* Regulatory rules */
 static struct ieee80211_regdomain rwnx_regdom = {
 	.n_reg_rules = 2,
@@ -270,7 +269,6 @@ static struct ieee80211_regdomain rwnx_regdom = {
 		REG_RULE(5150 - 10, 5970 + 10, 80, 0, 1000, 0),
 	}
 };
-#endif
 #endif
 
 static const int mcs_map_to_rate[4][3] = {
@@ -1511,17 +1509,6 @@ if (rwnx_hw->mod_params->custregd) {
 
 #if 0
 	if (rwnx_hw->mod_params->custregd) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
-		// Apply custom regulatory. Note that for recent kernel versions we use instead the
-		// REGULATORY_WIPHY_SELF_MANAGED flag, along with the regulatory_set_wiphy_regd()
-		// function, that needs to be called after wiphy registration
-		printk(KERN_CRIT
-			   "\n\n%s: CAUTION: USING PERMISSIVE CUSTOM REGULATORY RULES\n\n",
-			   __func__);
-		wiphy->regulatory_flags |= REGULATORY_CUSTOM_REG;
-		wiphy->regulatory_flags |= REGULATORY_IGNORE_STALE_KICKOFF;
-		wiphy_apply_custom_regulatory(wiphy, &rwnx_regdom);
-#endif
 		// Check if custom channel set shall be enabled. In such case only monitor mode is
 		// supported
 		if (rwnx_hw->mod_params->custchan) {
@@ -1654,9 +1641,6 @@ void rwnx_custregd(struct rwnx_hw *rwnx_hw, struct wiphy *wiphy)
 // For older kernel version, the custom regulatory is applied before the wiphy
 // registration (in rwnx_set_wiphy_params()), so nothing has to be done here
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0)
-	wiphy->regulatory_flags |= REGULATORY_IGNORE_STALE_KICKOFF;
-#endif
 	if (!rwnx_hw->mod_params->custregd)
 		return;
 

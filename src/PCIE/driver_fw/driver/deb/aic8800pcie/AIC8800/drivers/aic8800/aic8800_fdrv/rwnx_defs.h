@@ -67,18 +67,16 @@
 #define PS_SP_INTERRUPTED  255
 #define MAC_ADDR_LEN 6
 
-#if LINUX_VERSION_CODE >= HIGH_KERNEL_VERSION
 #define IEEE80211_MAX_AMPDU_BUF                             IEEE80211_MAX_AMPDU_BUF_HE
 #define IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_MU_BEAMFORMING_PARTIAL_BW_FB
 #define IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMER_FB         IEEE80211_HE_PHY_CAP6_TRIG_SU_BEAMFORMING_FB
 #define IEEE80211_HE_PHY_CAP3_RX_HE_MU_PPDU_FROM_NON_AP_STA IEEE80211_HE_PHY_CAP3_RX_PARTIAL_BW_SU_IN_20MHZ_MU
-#endif
 
 #ifdef CONFIG_KLYIN
 #define IEEE80211_MAX_AMPDU_BUF IEEE80211_MAX_AMPDU_BUF_HE
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
+#if defined(CONFIG_VHT_FOR_OLD_KERNEL)
 enum nl80211_ac {
         NL80211_AC_VO,
         NL80211_AC_VI,
@@ -88,7 +86,7 @@ enum nl80211_ac {
 };
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 6, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
+#if defined(CONFIG_VHT_FOR_OLD_KERNEL)
 struct ieee80211_vht_operation {
         u8 vht_op_info_chwidth;
         u8 vht_op_info_chan_center_freq_seg1_idx;
@@ -97,7 +95,7 @@ struct ieee80211_vht_operation {
 } __packed;
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0) || defined(CONFIG_VHT_FOR_OLD_KERNEL)
+#if defined(CONFIG_VHT_FOR_OLD_KERNEL)
 #define IEEE80211_RADIOTAP_VHT                                  21
 #define IEEE80211_RADIOTAP_VHT_KNOWN_GI                         0x0004
 #define IEEE80211_RADIOTAP_VHT_KNOWN_BANDWIDTH                  0x0040

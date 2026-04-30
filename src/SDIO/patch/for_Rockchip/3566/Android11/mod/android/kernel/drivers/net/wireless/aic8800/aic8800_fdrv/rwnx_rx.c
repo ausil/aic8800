@@ -314,10 +314,6 @@ static void rwnx_rx_statistic(struct rwnx_hw *rwnx_hw, struct hw_rxhdr *hw_rxhdr
  * When vif is an AP interface, multicast skb are forwarded and resent, whereas
  * skb for other BSS's STA are only resent.
  */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0))
-#define RAISE_RX_SOFTIRQ() \
-	cpu_raise_softirq(smp_processor_id(), NET_RX_SOFTIRQ)
-#endif /* LINUX_VERSION_CODE  */
 
 void rwnx_rx_data_skb_resend(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 							 struct sk_buff *skb,  struct hw_rxhdr *rxhdr)
@@ -387,15 +383,7 @@ static void rwnx_rx_data_skb_forward(struct rwnx_hw *rwnx_hw, struct rwnx_vif *r
 	* If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
 	* * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
 	*/
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
 		netif_rx_ni(rx_skb);
-	#else
-		ulong flags;
-		netif_rx(rx_skb);
-		local_irq_save(flags);
-		RAISE_RX_SOFTIRQ();
-		local_irq_restore(flags);
-	#endif
 	}
 	#endif
 
@@ -524,15 +512,7 @@ static bool rwnx_rx_data_skb(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 			* If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
 			* * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
 			*/
-			#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
 				netif_rx_ni(rx_skb);
-			#else
-				ulong flags;
-				netif_rx(rx_skb);
-				local_irq_save(flags);
-				RAISE_RX_SOFTIRQ();
-				local_irq_restore(flags);
-			#endif
 			}
 			#endif
 
@@ -568,20 +548,12 @@ static void rwnx_rx_mgmt(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 	if (ieee80211_is_beacon(mgmt->frame_control)) {
 		if ((RWNX_VIF_TYPE(rwnx_vif) == NL80211_IFTYPE_MESH_POINT) &&
 			hw_rxhdr->flags_new_peer) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
-			cfg80211_notify_new_peer_candidate(rwnx_vif->ndev, mgmt->sa,
-											   mgmt->u.beacon.variable,
-											   skb->len - offsetof(struct ieee80211_mgmt,
-																   u.beacon.variable),
-											   GFP_ATOMIC);
-#else
 			/* TODO: the value of parameter sig_dbm need to be confirmed */
 			rwnx_cfg80211_notify_new_peer_candidate(rwnx_vif->ndev, mgmt->sa,
 											   mgmt->u.beacon.variable,
 											   skb->len - offsetof(struct ieee80211_mgmt,
 																   u.beacon.variable),
 											   rxvect->rssi1, GFP_ATOMIC);
-#endif
 		} else {
 			rwnx_cfg80211_report_obss_beacon(rwnx_hw->wiphy, skb->data, skb->len,
 										hw_rxhdr->phy_info.phy_prim20_freq,
@@ -591,9 +563,7 @@ static void rwnx_rx_mgmt(struct rwnx_hw *rwnx_hw, struct rwnx_vif *rwnx_vif,
 				ieee80211_is_disassoc(mgmt->frame_control)) &&
 			   (mgmt->u.deauth.reason_code == WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA ||
 				mgmt->u.deauth.reason_code == WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA)) {
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 11, 0)  // TODO: process unprot mgmt
 		cfg80211_rx_unprot_mlme_mgmt(rwnx_vif->ndev, skb->data, skb->len);
-		#endif
 	} else if ((RWNX_VIF_TYPE(rwnx_vif) == NL80211_IFTYPE_STATION) &&
 			   (ieee80211_is_action(mgmt->frame_control) &&
 				(mgmt->u.action.category == 6))) {
@@ -898,11 +868,7 @@ static void rwnx_rx_add_rtap_hdr(struct rwnx_hw *rwnx_hw,
 			*pos |= IEEE80211_RADIOTAP_MCS_FMT_GF;
 		if (fec_coding)
 			*pos |= IEEE80211_RADIOTAP_MCS_FEC_LDPC;
-		#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-		*pos++ |= stbc << 5;
-		#else
 		*pos++ |= stbc << IEEE80211_RADIOTAP_MCS_STBC_SHIFT;
-		#endif
 		*pos++ = rate_idx;
 	}
 
@@ -956,11 +922,7 @@ static void rwnx_rx_add_rtap_hdr(struct rwnx_hw *rwnx_hw,
 		*pos = (rate_idx << 4) | vht_nss;
 		pos += 4;
 		if (fec_coding)
-			#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0)
-			*pos |= 0x01;
-			#else
 			*pos |= IEEE80211_RADIOTAP_CODING_LDPC_USER0;
-			#endif
 		pos++;
 		// group ID
 		pos++;
@@ -1174,13 +1136,7 @@ struct reord_ctrl_info *reord_init_sta(struct aicwf_rx_priv *rx_priv, const u8 *
 		preorder_ctrl->rx_priv = rx_priv;
 		INIT_LIST_HEAD(&preorder_ctrl->reord_list);
 		spin_lock_init(&preorder_ctrl->reord_list_lock);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		init_timer(&preorder_ctrl->reord_timer);
-		preorder_ctrl->reord_timer.data = (ulong) preorder_ctrl;
-		preorder_ctrl->reord_timer.function = reord_timeout_handler;
-#else
 		timer_setup(&preorder_ctrl->reord_timer, reord_timeout_handler, 0);
-#endif
 		INIT_WORK(&preorder_ctrl->reord_timer_work, reord_timeout_worker);
 	}
 
@@ -1326,15 +1282,7 @@ int reord_single_frame_ind(struct aicwf_rx_priv *rx_priv, struct recv_msdu *prfr
 		 * If the receive is not processed inside an ISR, the softirqd must be woken explicitly to service the NET_RX_SOFTIRQ.
 		 * * In 2.6 kernels, this is handledby netif_rx_ni(), but in earlier kernels, we need to do it manually.
 		 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
 		netif_rx_ni(skb);
-#else
-		ulong flags;
-		netif_rx(skb);
-		local_irq_save(flags);
-		RAISE_RX_SOFTIRQ();
-		local_irq_restore(flags);
-#endif
 	}
 
 	prframe->pkt = NULL;
@@ -1407,17 +1355,9 @@ void reord_rxframes_ind(struct aicwf_rx_priv *rx_priv,
 	}
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void reord_timeout_handler (ulong data)
-#else
 void reord_timeout_handler (struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	struct reord_ctrl *preorder_ctrl = (struct reord_ctrl *)data;
-#else
 	struct reord_ctrl *preorder_ctrl = from_timer(preorder_ctrl, t, reord_timer);
-#endif
 	struct aicwf_rx_priv *rx_priv = preorder_ctrl->rx_priv;
 
 	if (reord_rxframes_process(rx_priv, preorder_ctrl, true) == true) {
@@ -1621,18 +1561,10 @@ void remove_sec_hdr_mgmt_frame(struct hw_rxhdr *hw_rxhdr, struct sk_buff *skb)
 	}
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void defrag_timeout_cb(ulong data)
-#else
 void defrag_timeout_cb(struct timer_list *t)
-#endif
 {
 	struct defrag_ctrl_info *defrag_ctrl = NULL;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	defrag_ctrl = (struct defrag_ctrl_info *)data;
-#else
 	defrag_ctrl = from_timer(defrag_ctrl, t, defrag_timer);
-#endif
 
 	printk("%s:%p\r\n", __func__, defrag_ctrl);
 	list_del_init(&defrag_ctrl->list);
@@ -1992,13 +1924,7 @@ check_len_update:
 						spin_lock_bh(&rwnx_hw->defrag_lock);
 						list_add_tail(&defrag_info->list, &rwnx_hw->defrag_list);
 						spin_unlock_bh(&rwnx_hw->defrag_lock);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-						init_timer(&defrag_info->defrag_timer);
-						defrag_info->defrag_timer.data = (unsigned long)defrag_info;
-						defrag_info->defrag_timer.function = defrag_timeout_cb;
-#else
 						timer_setup(&defrag_info->defrag_timer, defrag_timeout_cb, 0);
-#endif
 						ret = mod_timer(&defrag_info->defrag_timer, jiffies + msecs_to_jiffies(DEFRAG_MAX_WAIT));
 						dev_kfree_skb(skb);
 						return 0;

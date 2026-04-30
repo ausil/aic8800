@@ -683,7 +683,7 @@ static void b_steering_config_fill(const s8 *buf, s8 *pos)
 	else if (!os_strcmp(buf, "non_prefer_band_grp_ssid0")) {
 		B_CTX.non_prefer_band_grp_ssid[0] = atoi(pos);
 	}
-#if (SSID_NUM > 1)
+#if SSID_NUM > 1
 	else if (!os_strcmp(buf, "prefer_band_grp_ssid1")) {
 		B_CTX.prefer_band_grp_ssid[1] = atoi(pos);
 	}
@@ -691,7 +691,7 @@ static void b_steering_config_fill(const s8 *buf, s8 *pos)
 		B_CTX.non_prefer_band_grp_ssid[1] = atoi(pos);
 	}
 #endif
-#if (SSID_NUM > 2) 
+#if SSID_NUM > 2
 	else if (!os_strcmp(buf, "prefer_band_grp_ssid2")) {
 		B_CTX.prefer_band_grp_ssid[2] = atoi(pos);
 	}
@@ -699,7 +699,7 @@ static void b_steering_config_fill(const s8 *buf, s8 *pos)
 		B_CTX.non_prefer_band_grp_ssid[2] = atoi(pos);
 	}
 #endif
-#if (SSID_NUM > 3)
+#if SSID_NUM > 3
 	else if (!os_strcmp(buf, "prefer_band_grp_ssid3")) {
 		B_CTX.prefer_band_grp_ssid[3] = atoi(pos);
 	}
@@ -707,7 +707,7 @@ static void b_steering_config_fill(const s8 *buf, s8 *pos)
 		B_CTX.non_prefer_band_grp_ssid[3] = atoi(pos);
 	}
 #endif
-#if (SSID_NUM > 4)
+#if SSID_NUM > 4
 	else if (!os_strcmp(buf, "prefer_band_grp_ssid4")) {
 		B_CTX.prefer_band_grp_ssid[4] = atoi(pos);
 	}

@@ -67,7 +67,7 @@ struct btusb_data {
     int tx_in_flight;
     spinlock_t txlock;
 	
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		spinlock_t rxlock;
 		struct sk_buff *evt_skb;
@@ -89,7 +89,7 @@ struct btusb_data {
     int suspend_count;
     uint16_t sco_handle;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
     int (*recv_bulk) (struct btusb_data * data, void *buffer, int count);
 #endif

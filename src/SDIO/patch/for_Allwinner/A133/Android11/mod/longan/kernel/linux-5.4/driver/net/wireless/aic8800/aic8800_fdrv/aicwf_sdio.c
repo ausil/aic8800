@@ -116,42 +116,19 @@ int aicwf_sdio_recv_pkt(struct aic_sdio_dev *sdiodev, struct sk_buff *skbbuf,
 static int wakeup_enable;
 static u32 hostwake_irq_num;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 static struct wakeup_source *ws;
-#else
-#ifdef ANDROID_PLATFORM
-#include <linux/wakelock.h>
-static struct wake_lock irq_wakelock;
-#endif//ANDROID_PLATFORM
-#endif
 
 #ifdef CONFIG_PLATFORM_ALLWINNER
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 extern int sunxi_wlan_get_oob_irq(int *, int *);
-#else
-extern int sunxi_wlan_get_oob_irq(void);
-extern int sunxi_wlan_get_oob_irq_flags(void);
-#endif
 #endif// CONFIG_PLATFORM_ALLWINNER
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 static struct wakeup_source *ws;
-#else
-#include <linux/wakelock.h>
-static struct wake_lock irq_wakelock;
-#endif
 
 static irqreturn_t rwnx_hostwake_irq_handler(int irq, void *para)
 {
 	static int wake_cnt;
 	wake_cnt++;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	__pm_wakeup_event(ws, HZ / 20);
-#else
-#ifdef ANDROID_PLATFORM
-	wake_lock_timeout(&irq_wakelock, HZ / 20);
-#endif //ANDROID_PLATFORM
-#endif
 	printk("%s(%d): wake_irq_cnt = %d\n", __func__, __LINE__, wake_cnt);
 	return IRQ_HANDLED;
 }
@@ -165,23 +142,13 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 #ifdef CONFIG_PLATFORM_ALLWINNER
 	int irq_flags;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	hostwake_irq_num = sunxi_wlan_get_oob_irq(&irq_flags, &wakeup_enable);
-#else
-	hostwake_irq_num = sunxi_wlan_get_oob_irq();
-	irq_flags = sunxi_wlan_get_oob_irq_flags();
-	wakeup_enable = 1;
-#endif
 #endif //CONFIG_PLATFORM_ALLWINNER
 
 
 
 	if (wakeup_enable) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 		ws = wakeup_source_register(dev, "wifisleep");
-#else
-		wake_lock_init(&irq_wakelock, WAKE_LOCK_SUSPEND, "wifisleep");
-#endif
 		ret = device_init_wakeup(dev, true);
 		if (ret < 0) {
 			pr_err("%s(%d): device init wakeup failed!\n", __func__, __LINE__);
@@ -211,11 +178,7 @@ fail2:
 	dev_pm_clear_wake_irq(dev);
 fail1:
 	device_init_wakeup(dev, false);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	wakeup_source_unregister(ws);
-#else
-	wake_lock_destroy(&irq_wakelock);
-#endif
 	return ret;
 }
 
@@ -224,13 +187,7 @@ static int rwnx_unregister_hostwake_irq(struct device *dev)
 	if (wakeup_enable) {
 		device_init_wakeup(dev, false);
 		dev_pm_clear_wake_irq(dev);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 		wakeup_source_unregister(ws);
-#else
-#ifdef ANDROID_PLATFORM
-		wake_lock_destroy(&irq_wakelock);
-#endif //ANDROID_PLATFORM
-#endif
 	}
 	free_irq(hostwake_irq_num, NULL);
 	printk("%s(%d)\n", __func__, __LINE__);
@@ -391,13 +348,7 @@ static int aicwf_sdio_resume(struct device *dev)
 			netif_device_attach(rwnx_vif->ndev);
 	}
 	aicwf_sdio_pwr_stctl(sdiodev, SDIO_ACTIVE_ST);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	__pm_relax(ws);
-#else
-#ifdef ANDROID_PLATFORM
-	wake_unlock(&irq_wakelock);
-#endif //ANDROID_PLATFORM
-#endif
 
 	return 0;
 }
@@ -1115,17 +1066,9 @@ static int aicwf_sdio_pwrctl_thread(void *data)
 	return 0;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-static void aicwf_sdio_bus_pwrctl(ulong data)
-#else
 static void aicwf_sdio_bus_pwrctl(struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	struct aic_sdio_dev *sdiodev = (struct aic_sdio_dev *) data;
-#else
 	struct aic_sdio_dev *sdiodev = from_timer(sdiodev, t, timer);
-#endif
 
 	if (sdiodev->bus_if->state == BUS_DOWN_ST) {
 		sdio_err("bus down\n");
@@ -1383,13 +1326,7 @@ void *aicwf_sdio_bus_init(struct aic_sdio_dev *sdiodev)
 	init_waitqueue_head(&tx_priv->cmd_txdone_wait);
 	atomic_set(&tx_priv->tx_pktcnt, 0);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	init_timer(&sdiodev->timer);
-	sdiodev->timer.data = (ulong) sdiodev;
-	sdiodev->timer.function = aicwf_sdio_bus_pwrctl;
-#else
 	timer_setup(&sdiodev->timer, aicwf_sdio_bus_pwrctl, 0);
-#endif
 	init_completion(&sdiodev->pwrctrl_trgg);
 #ifdef AICWF_SDIO_SUPPORT
 	sdiodev->pwrctl_tsk = kthread_run(aicwf_sdio_pwrctl_thread, sdiodev, "aicwf_pwrctl");

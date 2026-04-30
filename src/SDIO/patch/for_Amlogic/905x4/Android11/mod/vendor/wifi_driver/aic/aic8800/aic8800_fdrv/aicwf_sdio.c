@@ -20,9 +20,7 @@
 #include "sdio_host.h"
 #include "rwnx_defs.h"
 #include "rwnx_platform.h"
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 #include <linux/pm_wakeirq.h>
-#endif
 
 #ifdef CONFIG_INGENIC_T20
 #include "mach/jzmmc.h"
@@ -48,9 +46,7 @@ struct proc_dir_entry *wifi_suspend_node;
 
 #ifdef CONFIG_PLATFORM_AMLOGIC
 #include <linux/amlogic/wifi_dt.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0))
 extern int wifi_irq_num(void);
-#endif
 #endif
 
 
@@ -188,43 +184,19 @@ static int wakeup_enable;
 static u32 hostwake_irq_num;
 #endif//CONFIG_GPIO_WAKEUP
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) || defined(CONFIG_PLATFORM_AMLOGIC)//LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 //static struct wakeup_source *ws_rx_sdio;
 //static struct wakeup_source *ws_sdio_pwrctrl;
 //static struct wakeup_source *ws_tx_sdio;
 #ifdef CONFIG_GPIO_WAKEUP
 static struct wakeup_source *ws;
 #endif
-#else
-#ifdef ANDROID_PLATFORM
-#ifdef CONFIG_GPIO_WAKEUP
-#include <linux/wakelock.h>
-static struct wake_lock irq_wakelock;
-//struct wake_lock irq_wakelock;
-#endif//CONFIG_GPIO_WAKEUP
-#endif//ANDROID_PLATFORM
-#endif
 
 #ifdef CONFIG_PLATFORM_ALLWINNER
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 extern int sunxi_wlan_get_oob_irq(int *, int *);
-#else
-extern int sunxi_wlan_get_oob_irq(void);
-extern int sunxi_wlan_get_oob_irq_flags(void);
-#endif
 #endif// CONFIG_PLATFORM_ALLWINNER
 
 #if 0
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 static struct wakeup_source *ws;
-#else
-#ifdef ANDROID_PLATFORM
-#ifdef CONFIG_GPIO_WAKEUP
-#include <linux/wakelock.h>
-static struct wake_lock irq_wakelock;
-#endif//CONFIG_GPIO_WAKEUP
-#endif//ANDROID_PLATFORM
-#endif
 #endif
 
 
@@ -235,17 +207,9 @@ void rwnx_pm_stay_awake(struct aic_sdio_dev *sdiodev){
 	
 	
 		//printk("%s active_count:%d relax_count:%d\r\n", __func__, (int)ws->active_count, (int)ws->relax_count);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 		if(ws != NULL){
 			__pm_stay_awake(ws);
 		}
-#else
-#ifdef ANDROID_PLATFORM
-#ifdef CONFIG_GPIO_WAKEUP
-		wake_lock(&irq_wakelock);
-#endif //CONFIG_GPIO_WAKEUP
-#endif //ANDROID_PLATFORM
-#endif
 	
 	spin_unlock_bh(&sdiodev->wslock);
 #endif
@@ -258,17 +222,9 @@ void rwnx_pm_relax(struct aic_sdio_dev *sdiodev){
 
 
 	//printk("%s active_count:%d relax_count:%d\r\n", __func__, (int)ws->active_count, (int)ws->relax_count);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 	if(ws != NULL){
 		__pm_relax(ws);
 	}
-#else
-#ifdef ANDROID_PLATFORM
-#ifdef CONFIG_GPIO_WAKEUP
-	wake_unlock(&irq_wakelock);
-#endif //CONFIG_GPIO_WAKEUP
-#endif //ANDROID_PLATFORM
-#endif
 	spin_unlock_bh(&sdiodev->wslock);
 #endif
 
@@ -285,13 +241,7 @@ static irqreturn_t rwnx_hostwake_irq_handler(int irq, void *para)
 	wake_cnt++;
 
 #if 1
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 	__pm_wakeup_event(ws, HZ);
-#else
-#ifdef ANDROID_PLATFORM
-	wake_lock_timeout(&irq_wakelock, HZ);
-#endif //ANDROID_PLATFORM
-#endif
 #endif
 
 	//rwnx_pm_stay_awake(g_rwnx_plat->sdiodev);
@@ -315,13 +265,7 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 //TODO hostwake_irq_num hostwake_irq_num and wakeup_enable
 
 #ifdef CONFIG_PLATFORM_ALLWINNER
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 	hostwake_irq_num = sunxi_wlan_get_oob_irq(&irq_flags, &wakeup_enable);
-#else
-	hostwake_irq_num = sunxi_wlan_get_oob_irq();
-	irq_flags = sunxi_wlan_get_oob_irq_flags();
-	wakeup_enable = 1;
-#endif
 #endif //CONFIG_PLATFORM_ALLWINNER
 
 //For Rockchip
@@ -335,9 +279,6 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 
 //For Amlogic
 #ifdef CONFIG_PLATFORM_AMLOGIC
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0))
-		host_oob_irq = INT_GPIO_4;
-#else
 		hostwake_irq_num = wifi_irq_num();
 		printk("%s hostwake_irq_num:%d \r\n", __func__, hostwake_irq_num);
 		//irq_flags = (IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE) & IRQF_TRIGGER_MASK;
@@ -345,19 +286,14 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 		printk("%s irq_flags:%d \r\n", __func__, irq_flags);
 		wakeup_enable = 1;
 #endif
-#endif
 
 
 
 	if (wakeup_enable) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 #ifdef CONFIG_PLATFORM_AMLOGIC
 		ws = wakeup_source_register("wifisleep");
 #else
 		ws = wakeup_source_register(dev, "wifisleep");
-#endif
-#else
-		wake_lock_init(&irq_wakelock, WAKE_LOCK_SUSPEND, "wifisleep");
 #endif
 		ret = device_init_wakeup(dev, true);
 		if (ret < 0) {
@@ -365,9 +301,7 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 			return ret;
 		}
 		
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 		ret = dev_pm_set_wake_irq(dev, hostwake_irq_num);
-#endif
 		if (ret < 0) {
 			pr_err("%s(%d): can't enable wakeup src!\n", __func__, __LINE__);
 			goto fail1;
@@ -390,16 +324,10 @@ static int rwnx_register_hostwake_irq(struct device *dev)
 	return ret;
 
 fail2:
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 	dev_pm_clear_wake_irq(dev);
-#endif
 fail1:
 	device_init_wakeup(dev, false);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 	wakeup_source_unregister(ws);
-#else
-	wake_lock_destroy(&irq_wakelock);
-#endif
 #endif//CONFIG_GPIO_WAKEUP
 	return ret;
 }
@@ -410,18 +338,8 @@ static int rwnx_unregister_hostwake_irq(struct device *dev)
 	rwnx_disable_hostwake_irq();
 	if (wakeup_enable) {
 		device_init_wakeup(dev, false);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 		dev_pm_clear_wake_irq(dev);
-#else
-	AICWFDBG(LOGERROR, "%s kernel unsupport this feature!\r\n", __func__);
-#endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) || defined(CONFIG_PLATFORM_AMLOGIC)
 		wakeup_source_unregister(ws);
-#else
-#ifdef ANDROID_PLATFORM
-		wake_lock_destroy(&irq_wakelock);
-#endif //ANDROID_PLATFORM
-#endif
 	}
 	free_irq(hostwake_irq_num, NULL);
 #endif//CONFIG_GPIO_WAKEUP
@@ -1498,17 +1416,9 @@ static int aicwf_sdio_pwrctl_thread(void *data)
 	return 0;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-static void aicwf_sdio_bus_pwrctl(ulong data)
-#else
 static void aicwf_sdio_bus_pwrctl(struct timer_list *t)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	struct aic_sdio_dev *sdiodev = (struct aic_sdio_dev *) data;
-#else
 	struct aic_sdio_dev *sdiodev = from_timer(sdiodev, t, timer);
-#endif
 
 	if (sdiodev->bus_if->state == BUS_DOWN_ST) {
 		sdio_err("bus down\n");
@@ -1879,13 +1789,7 @@ void *aicwf_sdio_bus_init(struct aic_sdio_dev *sdiodev)
 	atomic_set(&tx_priv->tx_pktcnt, 0);
 
 #if defined(CONFIG_SDIO_PWRCTRL)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	init_timer(&sdiodev->timer);
-	sdiodev->timer.data = (ulong) sdiodev;
-	sdiodev->timer.function = aicwf_sdio_bus_pwrctl;
-#else
 	timer_setup(&sdiodev->timer, aicwf_sdio_bus_pwrctl, 0);
-#endif
 	init_completion(&sdiodev->pwrctrl_trgg);
 #ifdef AICWF_SDIO_SUPPORT
 	sdiodev->pwrctl_tsk = kthread_run(aicwf_sdio_pwrctl_thread, sdiodev, "aicwf_pwrctl");

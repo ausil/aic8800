@@ -236,7 +236,7 @@ enum dbg_msg_tag {
 	DBG_MAX,
 };
 
-#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 #define FW_M2D_OTA_NAME                 "m2d_ota.bin"
 #else
 #define FW_M2D_OTA_NAME                 "m2d_ota_lzma.bin"
@@ -310,7 +310,7 @@ struct dbg_start_app_cfm {
 
 int aicwf_plat_patch_load_8800dc(struct aic_sdio_dev *sdiodev);
 int aicwf_plat_rftest_load_8800dc(struct aic_sdio_dev *sdiodev);
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 int aicwf_misc_ram_valid_check_8800dc(struct aic_sdio_dev *sdiodev, int *valid_out);
 int aicwf_plat_calib_load_8800dc(struct aic_sdio_dev *sdiodev);
 #endif
@@ -333,7 +333,7 @@ void rwnx_rx_handle_msg(struct aic_sdio_dev *sdiodev, struct ipc_e2a_msg *msg);
 int aicbsp_platform_init(struct aic_sdio_dev *sdiodev);
 void aicbsp_platform_deinit(struct aic_sdio_dev *sdiodev);
 int aicbsp_driver_fw_init(struct aic_sdio_dev *sdiodev);
-#if (defined(CONFIG_DPD) && !defined(CONFIG_FORCE_DPD_CALIB))
+#if (defined(CONFIG_DPD)) && (!(defined(CONFIG_FORCE_DPD_CALIB)))
 int is_file_exist(char* name);
 #endif
 int aicbsp_resv_mem_init(void);
@@ -380,7 +380,7 @@ int aicbsp_resv_mem_deinit(void);
 #define RWNX_MAC_CALIB_NAME_8800DC_H_U02        RWNX_MAC_CALIB_BASE_NAME_8800DC"_h_u02.bin"
 #endif
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 #define ROM_FMAC_CALIB_ADDR            0x00130000
 #endif
 #ifdef CONFIG_DPD
@@ -488,7 +488,7 @@ enum chip_rev {
 
 #define AIC_M2D_OTA_INFO_ADDR       0x88000020
 #define AIC_M2D_OTA_DATA_ADDR       0x88000040
-#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 #define AIC_M2D_OTA_FLASH_ADDR      0x08004000
 #define AIC_M2D_OTA_CODE_START_ADDR (AIC_M2D_OTA_FLASH_ADDR + 0x0188)
 #define AIC_M2D_OTA_VER_ADDR        (AIC_M2D_OTA_FLASH_ADDR + 0x018C)

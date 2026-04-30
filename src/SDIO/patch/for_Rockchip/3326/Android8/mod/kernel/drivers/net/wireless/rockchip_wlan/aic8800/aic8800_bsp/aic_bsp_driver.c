@@ -17,9 +17,6 @@
 #include <linux/vmalloc.h>
 #include <linux/firmware.h>
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 12, 0)
-#include <linux/hardirq.h>
-#endif
 #include <linux/fs.h>
 #include "aicsdio_txrxif.h"
 #include "aicsdio.h"
@@ -467,9 +464,7 @@ void rwnx_rx_handle_msg(struct aic_sdio_dev *sdiodev, struct ipc_e2a_msg *msg)
 							msg_hdlrs[MSG_T(msg->id)][MSG_I(msg->id)]);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
-#endif
 
 #define MD5(x) x[0],x[1],x[2],x[3],x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[13],x[14],x[15]
 #define MD5PINRT "file md5:%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\r\n"
@@ -596,11 +591,7 @@ int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *device)
 		memset(buffer, 0, size);
 	}
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
 	rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-#else
-	rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-#endif
 
 	if (size != rdlen) {
 		printk("%s: %s file rdlen invalid %ld\n", __func__, name, (long int)rdlen);
@@ -774,7 +765,7 @@ int rwnx_plat_m2d_flash_ota_check(struct aic_sdio_dev *sdiodev, char *filename)
 	}
 	code_start_addr = rd_mem_addr_cfm.memdata;
 
-	#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+	#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 	ret = rwnx_send_dbg_mem_read_req(sdiodev, mem_addr_sdk_ver, &rd_mem_addr_cfm);
 	if (ret){
 		printk("mem_addr_sdk_ver %x rd fail: %d\n", mem_addr_code_start, ret);
@@ -829,7 +820,7 @@ int rwnx_plat_m2d_flash_ota_check(struct aic_sdio_dev *sdiodev, char *filename)
 			return -1;
 		}
 
-		#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+		#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 		driver_sdk_ver_addr_idx = (drv_sdk_ver_addr-drv_code_start_addr)/4;
 		#else
 		driver_sdk_ver_addr_idx = driver_sdk_ver_idx;
@@ -956,7 +947,7 @@ extern char aic_fw_path[200];
 int aicwf_plat_patch_load_8800dc(struct aic_sdio_dev *sdiodev)
 {
     int ret = 0;
-    #if !defined(CONFIG_FPGA_VERIFICATION)
+    #if !(defined(CONFIG_FPGA_VERIFICATION))
     if (chip_sub_id == 0) {
         printk("u01 is loaing ###############\n");
         ret = rwnx_plat_bin_fw_upload_android(sdiodev, ROM_FMAC_PATCH_ADDR, RWNX_MAC_PATCH_NAME2_8800DC);
@@ -1548,7 +1539,7 @@ u32 adaptivity_patch_tbl[][2] = {
 };
 
 u32 patch_tbl[][2] = {
-#if !defined(CONFIG_LINK_DET_5G)
+#if !(defined(CONFIG_LINK_DET_5G))
     {0x0104, 0x00000000}, //link_det_5g
 #endif
 #if defined(CONFIG_MCU_MESSAGE)

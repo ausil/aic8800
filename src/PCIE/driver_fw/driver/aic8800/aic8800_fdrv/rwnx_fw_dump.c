@@ -118,7 +118,7 @@ static ssize_t rwnx_dbgfs_thd3_read(struct file *file,
 }
 DEBUGFS_READ_FILE_OPS(thd3);
 
-#if (NX_TXQ_CNT == 5)
+#if NX_TXQ_CNT == 5
 static ssize_t rwnx_dbgfs_thd4_read(struct file *file,
                                     char __user *user_buf,
                                     size_t count, loff_t *ppos)
@@ -550,7 +550,7 @@ int rwnx_dbgfs_register_fw_dump(struct rwnx_hw *rwnx_hw,
     DEBUGFS_ADD_FILE(thd1,      dir_diags, S_IRUSR);
     DEBUGFS_ADD_FILE(thd2,      dir_diags, S_IRUSR);
     DEBUGFS_ADD_FILE(thd3,      dir_diags, S_IRUSR);
-#if (NX_TXQ_CNT == 5)
+#if NX_TXQ_CNT == 5
     DEBUGFS_ADD_FILE(thd4,      dir_diags, S_IRUSR);
 #endif
     DEBUGFS_ADD_FILE(mactrace,  dir_diags, S_IRUSR);

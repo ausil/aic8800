@@ -542,20 +542,14 @@ static inline int rwnx_rx_scan_done_ind(struct rwnx_hw *rwnx_hw,
 										struct rwnx_cmd *cmd,
 										struct ipc_e2a_msg *msg)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	struct cfg80211_scan_info info = {
 		.aborted = false,
 	};
-#endif
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
 	rwnx_ipc_elem_var_deallocs(rwnx_hw, &rwnx_hw->scan_ie);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	ieee80211_scan_completed(rwnx_hw->hw, &info);
-#else
-	ieee80211_scan_completed(rwnx_hw->hw, false);
-#endif
 
 	return 0;
 }
@@ -577,27 +571,19 @@ static inline int rwnx_rx_scanu_start_cfm(struct rwnx_hw *rwnx_hw,
         && !rwnx_hw->is_sched_scan
 #endif//CONFIG_SCHED_SCAN
         ) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 		struct cfg80211_scan_info info = {
 			.aborted = false,
 		};
 
 		cfg80211_scan_done(rwnx_hw->scan_request, &info);
-#else
-		cfg80211_scan_done(rwnx_hw->scan_request, false);
-#endif
 	}
 
 #ifdef CONFIG_SCHED_SCAN
     if(rwnx_hw->is_sched_scan){
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
         AICWFDBG(LOGINFO, "%s cfg80211_sched_scan_results \r\n", __func__);
         cfg80211_sched_scan_results(rwnx_hw->scan_request->wiphy, 
                 rwnx_hw->sched_scan_req->reqid);
-#else
-        cfg80211_sched_scan_results(rwnx_hw->sched_scan_req->wiphy);
-#endif  
         kfree(rwnx_hw->scan_request);
         rwnx_hw->is_sched_scan = false;
     }
@@ -626,31 +612,17 @@ static inline int rwnx_rx_scanu_result_ind(struct rwnx_hw *rwnx_hw,
 	chan = ieee80211_get_channel(rwnx_hw->wiphy, ind->center_freq);
 
 	if (chan != NULL) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
-        struct timespec ts;
-		get_monotonic_boottime(&ts);
-		tsf = (u64)ts.tv_sec * 1000000 + div_u64(ts.tv_nsec, 1000);
-        mgmt->u.probe_resp.timestamp = ((u64)ts.tv_sec*1000000) + ts.tv_nsec/1000;
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)
-		struct timespec ts;
-		ts = ktime_to_timespec(ktime_get_boottime());
-		tsf = (u64)ts.tv_sec * 1000000 + div_u64(ts.tv_nsec, 1000);
-		mgmt->u.probe_resp.timestamp = tsf;
-#else
 		struct timespec64 ts;
 		ts = ktime_to_timespec64(ktime_get_boottime());
 		tsf = (u64)ts.tv_sec * 1000000 + div_u64(ts.tv_nsec, 1000);
 		mgmt->u.probe_resp.timestamp = tsf;
-#endif
 	ie = mgmt->u.probe_resp.variable;
 	ielen = len - offsetof(struct ieee80211_mgmt, u.probe_resp.variable);
 	beacon_interval = le16_to_cpu(mgmt->u.probe_resp.beacon_int);
 	capability = le16_to_cpu(mgmt->u.probe_resp.capab_info);
 	/* framework use system bootup time */
 	bss = cfg80211_inform_bss(rwnx_hw->wiphy, chan,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0))
 				CFG80211_BSS_FTYPE_UNKNOWN,
-#endif
 				mgmt->bssid, tsf, capability, beacon_interval,
 				ie, ielen, ind->rssi * 100, GFP_ATOMIC);
 	}
@@ -839,36 +811,16 @@ static inline int rwnx_rx_sm_connect_ind(struct rwnx_hw *rwnx_hw,
             AICWFDBG(LOGINFO, "%s roaming fail to notify disconnect \r\n", __func__);
 			cfg80211_disconnected(dev, 0, NULL, 0,1, GFP_ATOMIC);
         }else{        
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
     		struct cfg80211_roam_info info;
     		memset(&info, 0, sizeof(info));
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
             if (rwnx_vif->ch_index < NX_CHAN_CTXT_CNT)
                     info.links[0].channel = rwnx_hw->chanctx_table[rwnx_vif->ch_index].chan_def.chan;
             info.links[0].bssid = (const u8 *)ind->bssid.array;
-#else
-            if (rwnx_vif->ch_index < NX_CHAN_CTXT_CNT)
-                    info.channel = rwnx_hw->chanctx_table[rwnx_vif->ch_index].chan_def.chan;
-            info.bssid = (const u8 *)ind->bssid.array;
-#endif
     		info.req_ie = req_ie;
     		info.req_ie_len = ind->assoc_req_ie_len;
     		info.resp_ie = rsp_ie;
     		info.resp_ie_len = ind->assoc_rsp_ie_len;
     		cfg80211_roamed(dev, &info, GFP_ATOMIC);
-#else
-    		chan = ieee80211_get_channel(rwnx_hw->wiphy, ind->center_freq);
-    		cfg80211_roamed(dev
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 39) || defined(COMPAT_KERNEL_RELEASE)
-    			, chan
-#endif
-    			, (const u8 *)ind->bssid.array
-    			, req_ie
-    			, ind->assoc_req_ie_len
-    			, rsp_ie
-    			, ind->assoc_rsp_ie_len
-    			, GFP_ATOMIC);
-#endif /*LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)*/
     	}
         }
 	netif_tx_start_all_queues(dev);
@@ -970,7 +922,6 @@ static inline int rwnx_rx_sm_external_auth_required_ind(struct rwnx_hw *rwnx_hw,
 	struct sm_external_auth_required_ind *ind =
 		(struct sm_external_auth_required_ind *)msg->param;
 	struct rwnx_vif *rwnx_vif = rwnx_hw->vif_table[ind->vif_idx];
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0) || defined(CONFIG_WPA3_FOR_OLD_KERNEL)
 	struct net_device *dev = rwnx_vif->ndev;
 	struct cfg80211_external_auth_params params;
 
@@ -994,10 +945,6 @@ static inline int rwnx_rx_sm_external_auth_required_ind(struct rwnx_hw *rwnx_hw,
 	}
 
 	rwnx_external_auth_enable(rwnx_vif);
-#else
-	rwnx_send_sm_external_auth_required_rsp(rwnx_hw, rwnx_vif,
-											WLAN_STATUS_UNSPECIFIED_FAILURE);
-#endif
 	return 0;
 }
 

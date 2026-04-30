@@ -296,7 +296,7 @@ void hw_lpm_ctrl_cback(void *p_mem)
 }
 
 
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 /******************************************************************************
 *
 **

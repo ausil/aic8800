@@ -944,7 +944,7 @@ void hw_config_cback(void *p_mem)
     patch_info* paic_patch_file_info = NULL;
     uint32_t    host_baudrate = 0;
 
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
     //const uint8_t null_bdaddr[BD_ADDR_LEN] = {0,0,0,0,0,0};
 #endif
 

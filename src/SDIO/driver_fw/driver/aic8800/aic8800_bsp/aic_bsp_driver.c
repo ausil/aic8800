@@ -644,7 +644,7 @@ int rwnx_plat_m2d_flash_ota_check(struct aic_sdio_dev *sdiodev, char *filename)
 	}
 	code_start_addr = rd_mem_addr_cfm.memdata;
 
-	#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+	#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 	ret = rwnx_send_dbg_mem_read_req(sdiodev, mem_addr_sdk_ver, &rd_mem_addr_cfm);
 	if (ret){
 		printk("mem_addr_sdk_ver %x rd fail: %d\n", mem_addr_code_start, ret);
@@ -699,7 +699,7 @@ int rwnx_plat_m2d_flash_ota_check(struct aic_sdio_dev *sdiodev, char *filename)
 			return -1;
 		}
 
-		#if !defined(CONFIG_M2D_OTA_LZMA_SUPPORT)
+		#if !(defined(CONFIG_M2D_OTA_LZMA_SUPPORT))
 		driver_sdk_ver_addr_idx = (drv_sdk_ver_addr-drv_code_start_addr)/4;
 		#else
 		driver_sdk_ver_addr_idx = driver_sdk_ver_idx;
@@ -826,7 +826,7 @@ extern char aic_fw_path[200];
 int aicwf_plat_patch_load_8800dc(struct aic_sdio_dev *sdiodev)
 {
     int ret = 0;
-    #if !defined(CONFIG_FPGA_VERIFICATION)
+    #if !(defined(CONFIG_FPGA_VERIFICATION))
     if (chip_sub_id == 0) {
         printk("u01 is loaing ###############\n");
         ret = rwnx_plat_bin_fw_upload_android(sdiodev, ROM_FMAC_PATCH_ADDR, RWNX_MAC_PATCH_NAME2_8800DC);
@@ -854,7 +854,7 @@ int aicwf_plat_rftest_load_8800dc(struct aic_sdio_dev *sdiodev)
     return ret;
 }
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 int aicwf_misc_ram_valid_check_8800dc(struct aic_sdio_dev *sdiodev, int *valid_out)
 {
     int ret = 0;
@@ -1102,7 +1102,7 @@ static int rwnx_plat_patch_load(struct aic_sdio_dev *sdiodev)
                     return ret;
                 }
             } else if (testmode == FW_DPDCALIB_MODE) {
-                #if (defined(CONFIG_DPD) && !defined(CONFIG_FORCE_DPD_CALIB))
+                #if (defined(CONFIG_DPD)) && (!(defined(CONFIG_FORCE_DPD_CALIB)))
                 if (is_file_exist(FW_DPDRESULT_NAME_8800DC) == 0) {
                     AICWFDBG(LOGINFO, "patch load\n");
                     ret = aicwf_plat_patch_load_8800dc(sdiodev);
@@ -1632,7 +1632,7 @@ u32 adaptivity_patch_tbl[][2] = {
 };
 
 u32 patch_tbl[][2] = {
-#if !defined(CONFIG_LINK_DET_5G)
+#if !(defined(CONFIG_LINK_DET_5G))
     {0x0104, 0x00000000}, //link_det_5g
 #endif
 #if defined(CONFIG_MCU_MESSAGE)
@@ -1878,7 +1878,7 @@ int aicwifi_init(struct aic_sdio_dev *sdiodev)
 		}
 	}
 
-#if (defined(CONFIG_GPIO_WAKEUP) || defined(CONFIG_SDIO_PWRCTRL))
+#if (defined(CONFIG_GPIO_WAKEUP)) || (defined(CONFIG_SDIO_PWRCTRL))
 	if (aicwf_sdio_writeb(sdiodev, sdiodev->sdio_reg.wakeup_reg, 4)) {
 		sdio_err("reg:%d write failed!\n", sdiodev->sdio_reg.wakeup_reg);
 		return -1;

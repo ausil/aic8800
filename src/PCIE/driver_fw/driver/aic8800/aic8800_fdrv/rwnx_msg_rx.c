@@ -576,20 +576,14 @@ static inline int rwnx_rx_scan_done_ind(struct rwnx_hw *rwnx_hw,
 										struct rwnx_cmd *cmd,
 										struct ipc_e2a_msg *msg)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	struct cfg80211_scan_info info = {
 		.aborted = false,
 	};
-#endif
 	RWNX_DBG(RWNX_FN_ENTRY_STR);
 
 	rwnx_ipc_elem_var_deallocs(rwnx_hw, &rwnx_hw->scan_ie);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	ieee80211_scan_completed(rwnx_hw->hw, &info);
-#else
-	ieee80211_scan_completed(rwnx_hw->hw, false);
-#endif
 
 	return 0;
 }

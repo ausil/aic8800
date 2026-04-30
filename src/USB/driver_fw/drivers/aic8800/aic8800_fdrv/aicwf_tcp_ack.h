@@ -91,11 +91,7 @@ void filter_rx_tcp_ack(struct rwnx_hw *priv,unsigned char *buf, unsigned plen);
 
 void move_tcpack_msg(struct rwnx_hw *priv, struct msg_buf * msg);
 void intf_tcp_drop_msg(struct rwnx_hw *priv,  struct msg_buf *msg);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void tcp_ack_timeout(unsigned long data);
-#else
 void tcp_ack_timeout(struct timer_list *t);
-#endif
 int tcp_check_quick_ack(unsigned char *buf, struct tcp_ack_msg *msg);
 int tcp_check_ack(unsigned char *buf,
 				struct tcp_ack_msg *msg,

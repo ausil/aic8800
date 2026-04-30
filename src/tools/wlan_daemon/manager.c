@@ -21,7 +21,7 @@ static struct msghdr msgh_sec;
 static struct sockaddr_nl s_sec_addr, d_sec_addr;
 #endif
 
-#if defined(CONFIG_WIFI_BAND_STEERING) && defined(ACTIVE_DUAL_BAND_DETECT)
+#if (defined(CONFIG_WIFI_BAND_STEERING)) && (defined(ACTIVE_DUAL_BAND_DETECT))
 unsigned char null_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #endif
 
@@ -60,7 +60,7 @@ void manager_hostapd_cli_bss_tm_req(
 	os_memset(sys_cmd, 0, sizeof(sys_cmd));
 
 	/* send bss tm req */
-#if defined(CONFIG_WIFI_BAND_STEERING) && defined(ACTIVE_DUAL_BAND_DETECT)
+#if (defined(CONFIG_WIFI_BAND_STEERING)) && (defined(ACTIVE_DUAL_BAND_DETECT))
 	if (!os_memcmp(bss_mac, null_mac, 6))
 		sprintf(sys_cmd, HOSTAPD_PATH" -p %s -i %s bss_tm_req "MAC_FMT"",
 			CTRL_PATH, intf_name, MAC_ARG(sta_mac));
@@ -630,7 +630,7 @@ static void mng_on_sta_rpt(
 		}
 	}
 
-#if defined(CONFIG_WIFI_BAND_STEERING) && defined(ACTIVE_DUAL_BAND_DETECT)
+#if (defined(CONFIG_WIFI_BAND_STEERING)) && (defined(ACTIVE_DUAL_BAND_DETECT))
 	/* if sta mac not found in cached frames, trigger sta to send probe request*/
 	if ((sta->is_dual_band != 1)
 	&& (sta->b_steer_bss_tm_req_cnt < BSS_TM_REQ_RETRY_LIMIT)

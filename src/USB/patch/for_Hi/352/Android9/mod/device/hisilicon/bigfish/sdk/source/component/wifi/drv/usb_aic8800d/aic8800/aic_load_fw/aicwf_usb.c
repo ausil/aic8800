@@ -108,7 +108,7 @@ static void aicwf_usb_tx_complete(struct urb *urb)
         skb = usb_buf->skb;
         dev_kfree_skb_any(skb);
     }
-    #if !defined CONFIG_USB_NO_TRANS_DMA_MAP
+    #if !(defined CONFIG_USB_NO_TRANS_DMA_MAP)
     else {
         u8 *buf;
         buf = (u8 *)usb_buf->skb;
@@ -971,7 +971,7 @@ u32 patch_tbl[][2] ={
 {0x00FC, 0x00000302},//rx msg fc pkt cnt
 #endif
 {0x0100, 0x0000000F}, //usb_reboot_additional_delay
-#if !defined(CONFIG_LINK_DET_5G)
+#if !(defined(CONFIG_LINK_DET_5G))
 {0x0104, 0x00000000}, //link_det_5g
 #endif
 };

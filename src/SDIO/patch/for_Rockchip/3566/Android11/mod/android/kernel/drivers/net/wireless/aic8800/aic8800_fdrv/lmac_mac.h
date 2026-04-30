@@ -465,35 +465,7 @@ enum mac_connection_flags {
 
 #define IEEE80211_HE_PPE_THRES_MAX_LEN		25
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/ieee80211.h>
-#else
-struct ieee80211_he_cap_elem {
-	u8 mac_cap_info[6];
-	u8 phy_cap_info[11];
-} __packed;
-
-struct ieee80211_he_mcs_nss_supp {
-	__le16 rx_mcs_80;
-	__le16 tx_mcs_80;
-	__le16 rx_mcs_160;
-	__le16 tx_mcs_160;
-	__le16 rx_mcs_80p80;
-	__le16 tx_mcs_80p80;
-} __packed;
-
-struct ieee80211_sta_he_cap {
-	bool has_he;
-	struct ieee80211_he_cap_elem he_cap_elem;
-	struct ieee80211_he_mcs_nss_supp he_mcs_nss_supp;
-	u8 ppe_thres[IEEE80211_HE_PPE_THRES_MAX_LEN];
-};
-
-struct ieee80211_sband_iftype_data {
-	u16 types_mask;
-	struct ieee80211_sta_he_cap he_cap;
-};
-#endif
 
 #endif
 #endif // LMAC_MAC_H_

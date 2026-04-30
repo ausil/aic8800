@@ -43,11 +43,7 @@ struct rwnx_sta *rwnx_retrieve_sta(struct rwnx_hw *rwnx_hw,
 
 #ifdef CONFIG_BAND_STEERING
 void aicwf_steering_work(struct work_struct *work);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-void aicwf_steering_timeout(ulong data);
-#else
 void aicwf_steering_timeout(struct timer_list *t);
-#endif
 #endif
 
 #ifdef CONFIG_DYNAMIC_PERPWR
@@ -70,11 +66,7 @@ int rwnx_fill_station_info(struct rwnx_sta *sta, struct rwnx_vif *vif,
 								  struct station_info *sinfo, u8 *phymode, u32 *tx_phyrate, u32 *rx_phyrate);
 int rwnx_cfg80211_change_bss(struct wiphy *wiphy, struct net_device *dev,
 							 struct bss_parameters *params);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aicwf_p2p_alive_timeout(ulong data);
-#else
 void aicwf_p2p_alive_timeout(struct timer_list *t);
-#endif
 void apm_staloss_work_process(struct work_struct *work);
 void apm_probe_sta_work_process(struct work_struct *work);
 int rwnx_cfg80211_set_monitor_channel_(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_chan_def *chandef);

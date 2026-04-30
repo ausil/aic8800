@@ -1893,7 +1893,7 @@ int android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		}
 		else if(!strncasecmp(command, CMD_SETSUSPENDMODE, strlen(CMD_SETSUSPENDMODE)) && testmode == 0){
 #ifdef AICWF_SDIO_SUPPORT           
-#if defined(CONFIG_GPIO_WAKEUP) && !defined(CONFIG_AUTO_POWERSAVE)
+#if (defined(CONFIG_GPIO_WAKEUP)) && (!(defined(CONFIG_AUTO_POWERSAVE)))
 			skip = strlen(CMD_SETSUSPENDMODE) + 1;
 			setsusp_mode = command_strtoul((command + skip), NULL, 10);
 #ifdef AICWF_LATENCY_MODE

@@ -82,12 +82,6 @@ userconfig_info_t userconfig_info = {
 
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
-static inline struct inode *file_inode(const struct file *f)
-{
-        return f->f_dentry->d_inode;
-}
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0)) */
 
 
 #endif/* !CONFIG_ROM_PATCH_EN */
@@ -276,11 +270,7 @@ static int rwnx_load_firmware(u32 **fw_buf, const char *name, struct device *dev
         return -1;
     }
 
-    #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
     rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-    #else
-    rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-    #endif
 
     if (size != rdlen) {
         AICWFDBG(LOGERROR, "%s: %s file rdlen invalid %d\n", __func__, name, (int)rdlen);
@@ -427,7 +417,7 @@ int rwnx_plat_bin_fw_upload_2(struct rwnx_hw *rwnx_hw, u32 fw_addr,
 
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if defined(CONFIG_PLATFORM_ALLWINNER) || defined(CONFIG_NANOPI_M4)
+#if (defined(CONFIG_PLATFORM_ALLWINNER)) || (defined(CONFIG_NANOPI_M4))
 #if 0
 static int aic_load_firmware(u32 ** fw_buf, const char *name,
                  struct device *device)
@@ -491,11 +481,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name,
         }
 
 
-        #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
         rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-        #else
-        rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-        #endif
 
         if(size != rdlen){
                 printk("%s: %s file rdlen invalid %ld\n", __func__, name, (long int)rdlen);
@@ -547,7 +533,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name,
 
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if defined(CONFIG_PLATFORM_ALLWINNER) || defined(CONFIG_NANOPI_M4)
+#if (defined(CONFIG_PLATFORM_ALLWINNER)) || (defined(CONFIG_NANOPI_M4))
 #if 0
 static int rwnx_plat_bin_fw_upload_android(struct rwnx_hw *rwnx_hw, u32 fw_addr,
                                char *filename)
@@ -1094,7 +1080,7 @@ static int rwnx_plat_fmac_load(struct rwnx_hw *rwnx_hw)
     int ret;
 
     RWNX_DBG(RWNX_FN_ENTRY_STR);
-    #if defined(CONFIG_NANOPI_M4) || defined(CONFIG_PLATFORM_ALLWINNER)
+    #if (defined(CONFIG_NANOPI_M4)) || (defined(CONFIG_PLATFORM_ALLWINNER))
     ret = rwnx_plat_bin_fw_upload_android(rwnx_hw, RAM_FMAC_FW_ADDR, RWNX_MAC_FW_NAME2);
     #else
     ret = rwnx_plat_bin_fw_upload_2(rwnx_hw,
@@ -1166,7 +1152,7 @@ static int rwnx_platform_reset(struct rwnx_plat *rwnx_plat)
 {
     u32 regval;
 
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
     return 0;
 #endif
 
@@ -1702,7 +1688,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
  */
 void rwnx_platform_off(struct rwnx_hw *rwnx_hw, void **config)
 {
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 		tasklet_kill(&rwnx_hw->task);
         rwnx_hw->plat->enabled = false;
         return ;
@@ -1758,7 +1744,7 @@ int rwnx_platform_init(struct rwnx_plat *rwnx_plat, void **platform_data)
 	AICWFDBG(LOGINFO, "%s rwnx_cfg80211_init enter \r\n", __func__);
 	ret = rwnx_cfg80211_init(rwnx_plat, platform_data);
 	AICWFDBG(LOGINFO, "%s rwnx_cfg80211_init exit \r\n", __func__);
-#if defined(AICWF_USB_SUPPORT) && defined(CONFIG_VENDOR_GPIO)
+#if (defined(AICWF_USB_SUPPORT)) && (defined(CONFIG_VENDOR_GPIO))
 	rwnx_send_dbg_gpio_write_req(rwnx_plat->usbdev->rwnx_hw, 1, 2, 0);//gpiob 2 = 0
 	rwnx_send_dbg_gpio_write_req(rwnx_plat->usbdev->rwnx_hw, 1, 3, 0);//gpiob 3 = 0
 	rwnx_send_dbg_gpio_write_req(rwnx_plat->usbdev->rwnx_hw, 1, 5, 0);//gpiob 5 = 0

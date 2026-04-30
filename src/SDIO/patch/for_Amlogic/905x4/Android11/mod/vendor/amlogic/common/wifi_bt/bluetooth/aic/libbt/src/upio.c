@@ -49,7 +49,7 @@
 #define UPIO_DBG TRUE
 #endif
 
-#if (UPIO_DBG == TRUE)
+#if UPIO_DBG == TRUE
 #define UPIODBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define UPIODBG(param, ...) {}
@@ -59,7 +59,7 @@
 **  Local type definitions
 ******************************************************************************/
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
 
 /* proc fs node for enable/disable lpm mode */
 #ifndef VENDOR_LPM_PROC_NODE
@@ -229,7 +229,7 @@ fail:
 **   LPM Static Functions
 *****************************************************************************/
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
 /*******************************************************************************
 **
 ** Function        proc_btwrite_timeout
@@ -298,7 +298,7 @@ void upio_start_stop_timer(int action) {
 void upio_init(void)
 {
     memset(upio_state, UPIO_UNKNOWN, UPIO_MAX_COUNT);
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     memset(&lpm_proc_cb, 0, sizeof(vnd_lpm_proc_cb_t));
 #endif
 }
@@ -314,7 +314,7 @@ void upio_init(void)
 *******************************************************************************/
 void upio_cleanup(void)
 {
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     if (lpm_proc_cb.timer_created == TRUE)
         timer_delete(lpm_proc_cb.timer_id);
 
@@ -408,7 +408,7 @@ int upio_set_bluetooth_power(int on)
 void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 {
     int rc;
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
     int fd = -1;
     char buffer;
 #endif
@@ -424,7 +424,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 
             upio_state[UPIO_LPM_MODE] = action;
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
             fd = open(VENDOR_LPM_PROC_NODE, O_WRONLY);
 
             if (fd < 0) {
@@ -448,7 +448,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
             if (write(fd, &buffer, 1) < 0) {
                 ALOGE("upio_set : write(%s) failed: %s (%d)",
                         VENDOR_LPM_PROC_NODE, strerror(errno),errno);
-#if (PROC_BTWRITE_TIMER_TIMEOUT_MS != 0)
+#if PROC_BTWRITE_TIMER_TIMEOUT_MS != 0
             } else {
                 if (action == UPIO_ASSERT) {
                     // create btwrite assertion holding timer
@@ -480,7 +480,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
             if (upio_state[UPIO_BT_WAKE] == action) {
                 UPIODBG("BT_WAKE is %s already", lpm_state[action]);
 
-#if (BT_WAKE_VIA_PROC == TRUE)
+#if BT_WAKE_VIA_PROC == TRUE
                 if (lpm_proc_cb.btwrite_active == TRUE)
                     /*
                      * The proc btwrite node could have not been updated for
@@ -499,7 +499,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
 
             upio_state[UPIO_BT_WAKE] = action;
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL == TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL == TRUE
 
             userial_vendor_ioctl( ( (action==UPIO_ASSERT) ? \
                       USERIAL_OP_ASSERT_BT_WAKE : USERIAL_OP_DEASSERT_BT_WAKE),\
@@ -510,7 +510,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
             /*
              *  Kick proc btwrite node only at UPIO_ASSERT
              */
-#if (BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == FALSE)
+#if BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == FALSE
             if (action == UPIO_DEASSERT)
                 return;
 #endif
@@ -522,7 +522,7 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
                         VENDOR_BTWRITE_PROC_NODE, strerror(errno), errno);
                 return;
             }
-#if (BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == TRUE)
+#if BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == TRUE
             if (action == UPIO_DEASSERT)
                 buffer = '0';
             else
@@ -532,14 +532,14 @@ void upio_set(uint8_t pio, uint8_t action, uint8_t polarity)
             if (write(fd, &buffer, 1) < 0) {
                 ALOGE("upio_set : write(%s) failed: %s (%d)",
                         VENDOR_BTWRITE_PROC_NODE, strerror(errno),errno);
-#if (PROC_BTWRITE_TIMER_TIMEOUT_MS != 0)
+#if PROC_BTWRITE_TIMER_TIMEOUT_MS != 0
             } else {
                 /* arm user space timer based on action */
                 upio_start_stop_timer(action);
 #endif
             }
 
-#if (BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == TRUE)
+#if BT_WAKE_VIA_PROC_NOTIFY_DEASSERT == TRUE
             lpm_proc_cb.btwrite_active = TRUE;
 #endif
 

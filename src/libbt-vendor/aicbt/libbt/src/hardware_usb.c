@@ -72,7 +72,7 @@ void hw_usb_config_cback(void *p_mem)
 	uint8_t     is_proceeding = FALSE;
 	int         i;
 	int         delay=100;
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 	const uint8_t null_bdaddr[BD_ADDR_LEN] = {0,0,0,0,0,0};
 #endif
 
@@ -107,7 +107,7 @@ void hw_usb_config_cback(void *p_mem)
 				if((is_proceeding = hw_set_fw_log(p_buf)) == TRUE)
 					break;
             case HW_CFG_SET_FW_LOG_ENABLE:
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 				if((is_proceeding = hw_config_read_bdaddr(p_buf)) == TRUE)
 					break;
 #else
@@ -116,7 +116,7 @@ void hw_usb_config_cback(void *p_mem)
 
 				break;
 #endif
-#if (USE_CONTROLLER_BDADDR == TRUE)
+#if USE_CONTROLLER_BDADDR == TRUE
 			case HW_CFG_READ_BD_ADDR:
 				p_tmp = (char *) (p_evt_buf + 1) + \
 					HCI_EVT_CMD_CMPL_LOCAL_BDADDR_ARRAY;
@@ -142,17 +142,17 @@ void hw_usb_config_cback(void *p_mem)
 				is_proceeding = TRUE;
 				break;
 			case HW_CFG_READ_LOCAL_FEATURES:
-#if (BT_RETENTION == TRUE)
+#if BT_RETENTION == TRUE
 				if ((is_proceeding = hw_aicbt_fw_retention_params_config(p_buf)) == TRUE)
 					break;
 			case HW_CFG_SET_FW_RET_PARAM:
 #endif
-#if (PCM_SETTING == TRUE)
+#if PCM_SETTING == TRUE
 				if ((is_proceeding = hw_config_set_pcm_param(p_buf)) == TRUE)
 					break;
 			case HW_CFG_SET_PCM_PARAM:
 #endif
-#if (MULTI_ADV_ENABLE == TRUE)
+#if MULTI_ADV_ENABLE == TRUE
 				if ((is_proceeding = hw_aic_bt_multi_adv_enable(p_buf)) == TRUE)
 					break;
 			case HW_CFG_SET_MULTI_ADV_EN:

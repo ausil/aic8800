@@ -908,7 +908,7 @@ int rwnx_plat_bin_fw_upload_2_with_version(struct rwnx_hw *rwnx_hw, u32 fw_addr,
 
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if defined(CONFIG_PLATFORM_ALLWINNER) || defined(CONFIG_NANOPI_M4)
+#if (defined(CONFIG_PLATFORM_ALLWINNER)) || (defined(CONFIG_NANOPI_M4))
 #if 0
 static int aic_load_firmware(u32 ** fw_buf, const char *name,
                  struct device *device)
@@ -1024,7 +1024,7 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name,
 
 
 #ifndef CONFIG_ROM_PATCH_EN
-#if defined(CONFIG_PLATFORM_ALLWINNER) || defined(CONFIG_NANOPI_M4)
+#if (defined(CONFIG_PLATFORM_ALLWINNER)) || (defined(CONFIG_NANOPI_M4))
 #if 0
 static int rwnx_plat_bin_fw_upload_android(struct rwnx_hw *rwnx_hw, u32 fw_addr,
                                char *filename)
@@ -1571,7 +1571,7 @@ static int rwnx_plat_fmac_load(struct rwnx_hw *rwnx_hw)
     int ret;
 
     RWNX_DBG(RWNX_FN_ENTRY_STR);
-    #if defined(CONFIG_NANOPI_M4) || defined(CONFIG_PLATFORM_ALLWINNER)
+    #if (defined(CONFIG_NANOPI_M4)) || (defined(CONFIG_PLATFORM_ALLWINNER))
     ret = rwnx_plat_bin_fw_upload_android(rwnx_hw, RAM_FMAC_FW_ADDR, RWNX_MAC_FW_NAME2);
     #else
     ret = rwnx_plat_bin_fw_upload_2(rwnx_hw,
@@ -1608,7 +1608,7 @@ static void rwnx_plat_mpif_sel(struct rwnx_plat *rwnx_plat)
 #endif
 }
 #endif
-#if (defined(CONFIG_DPD) && !defined(CONFIG_FORCE_DPD_CALIB))
+#if (defined(CONFIG_DPD)) && (!(defined(CONFIG_FORCE_DPD_CALIB)))
 int is_file_exist(char* name)
 {
     char *path = NULL;
@@ -1763,7 +1763,7 @@ static int rwnx_plat_patch_load(struct rwnx_hw *rwnx_hw)
                 }
                 /* Note: apply dpd_res after rftest running */
             } else if (testmode == FW_DPDCALIB_MODE) {
-                #if (defined(CONFIG_DPD) && !defined(CONFIG_FORCE_DPD_CALIB))
+                #if (defined(CONFIG_DPD)) && (!(defined(CONFIG_FORCE_DPD_CALIB)))
                 if (is_file_exist(FW_DPDRESULT_NAME_8800DC) == 0) {
                     AICWFDBG(LOGINFO, "patch load\n");
                     ret = aicwf_plat_patch_load_8800dc(rwnx_hw);
@@ -1848,7 +1848,7 @@ static int rwnx_platform_reset(struct rwnx_plat *rwnx_plat)
 {
     u32 regval;
 
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
     return 0;
 #endif
 
@@ -3827,7 +3827,7 @@ int rwnx_platform_on(struct rwnx_hw *rwnx_hw, void *config)
  */
 void rwnx_platform_off(struct rwnx_hw *rwnx_hw, void **config)
 {
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
 		tasklet_kill(&rwnx_hw->task);
         rwnx_hw->plat->enabled = false;
         return ;
@@ -3883,7 +3883,7 @@ int rwnx_platform_init(struct rwnx_plat *rwnx_plat, void **platform_data)
     AICWFDBG(LOGINFO, "%s rwnx_cfg80211_init enter \r\n", __func__);
     ret = rwnx_cfg80211_init(rwnx_plat, platform_data);
     AICWFDBG(LOGINFO, "%s rwnx_cfg80211_init exit \r\n", __func__);
-#if defined(AICWF_USB_SUPPORT) && defined(CONFIG_VENDOR_GPIO)
+#if (defined(AICWF_USB_SUPPORT)) && (defined(CONFIG_VENDOR_GPIO))
     // initialize gpiob2, gpiob3, gpiob5 to output mode and set output to 0
     rwnx_send_dbg_gpio_init_req(rwnx_plat->usbdev->rwnx_hw, 2, 1, 0);//gpiob 2 = 0
     rwnx_send_dbg_gpio_init_req(rwnx_plat->usbdev->rwnx_hw, 3, 1, 0);//gpiob 3 = 0

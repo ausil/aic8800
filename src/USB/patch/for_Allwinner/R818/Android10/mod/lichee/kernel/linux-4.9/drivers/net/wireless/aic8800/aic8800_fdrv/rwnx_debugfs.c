@@ -2103,7 +2103,7 @@ void rwnx_dbgfs_unregister(struct rwnx_hw *rwnx_hw)
 #ifdef CONFIG_RWNX_FULLMAC
         struct rwnx_rc_config_save *cfg, *next;
 #endif
-#if defined(AICWF_USB_SUPPORT) || defined(AICWF_SDIO_SUPPORT)
+#if (defined(AICWF_USB_SUPPORT)) || (defined(AICWF_SDIO_SUPPORT))
     return;
 #endif
 

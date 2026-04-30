@@ -71,7 +71,7 @@
 #define BTVND_DBG TRUE
 #endif
 
-#if (BTVND_DBG == TRUE)
+#if BTVND_DBG == TRUE
 #define BTVNDDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define BTVNDDBG(param, ...) {}

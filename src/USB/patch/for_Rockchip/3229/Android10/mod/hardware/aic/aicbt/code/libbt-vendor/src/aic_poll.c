@@ -40,7 +40,7 @@
 #define BTPOLL_DBG false
 #endif
 
-#if (BTPOLL_DBG == true)
+#if BTPOLL_DBG == true
 #define BTPOLLDBG(param, ...) {ALOGD(param, ## __VA_ARGS__);}
 #else
 #define BTPOLLDBG(param, ...) {}
@@ -233,7 +233,7 @@ void poll_timer_flush(void)
         if (status == 0)
             bt_poll_cb.timer_created = true;
     }
-#if (defined(ENABLE_BT_POLL_IN_ACTIVE_MODE) && (ENABLE_BT_POLL_IN_ACTIVE_MODE == false))
+#if (defined(ENABLE_BT_POLL_IN_ACTIVE_MODE)) && (ENABLE_BT_POLL_IN_ACTIVE_MODE == false)
     if (bt_poll_cb.timer_created == true) {
         ts.it_value.tv_sec = bt_poll_cb.timeout_ms / 1000;
         ts.it_value.tv_nsec = 1000 * 1000 * (bt_poll_cb.timeout_ms % 1000);

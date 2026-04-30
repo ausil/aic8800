@@ -23,7 +23,7 @@ enum skb_buff_id {
 	AIC_RESV_MEM_TXDATA,
 };
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 typedef struct {
     uint32_t bit_mask[3];
     uint32_t reserved;

@@ -85,7 +85,7 @@
 #define USERIAL_HW_FLOW_CTRL_ON        1
 
 
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
 /* These are the ioctl values used for bt_wake ioctl via UART driver. you may
  * need to redefine them on you platform!
  * Logically they need to be unique and not colide with existing uart ioctl's.
@@ -112,7 +112,7 @@ typedef struct {
 } tUSERIAL_CFG;
 
 typedef enum {
-#if (BT_WAKE_VIA_USERIAL_IOCTL==TRUE)
+#if BT_WAKE_VIA_USERIAL_IOCTL==TRUE
     USERIAL_OP_ASSERT_BT_WAKE,
     USERIAL_OP_DEASSERT_BT_WAKE,
     USERIAL_OP_GET_BT_WAKE_STATE,
@@ -223,7 +223,7 @@ void userial_recv_rawdata_hook(unsigned char *buffer, unsigned int total_length)
 #define VOHCI_SUPPORT FALSE
 #endif
 
-#if (VOHCI_SUPPORT == TRUE)
+#if VOHCI_SUPPORT == TRUE
 
 #define CONFIG_SCO_OVER_HCI
 //#define CONFIG_SCO_MSBC_PLC

@@ -1913,7 +1913,7 @@ void aicwf_patch_config_8800dc(struct aic_sdio_dev *rwnx_hw)
             }
         }
 
-        #if !defined(CONFIG_FPGA_VERIFICATION)
+        #if !(defined(CONFIG_FPGA_VERIFICATION))
         if ((IS_CHIP_ID_H())) {
             txgain_cfg_size = sizeof(txgain_map_h);
             txgain_cfg_array = (u32 *)txgain_map_h;
@@ -2172,13 +2172,7 @@ int aicwf_dpd_result_write_8800dc(void *buf, int buf_len)
 
     fs = get_fs();
     set_fs(KERNEL_DS);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     sum = kernel_write(fp, buf, buf_len, &pos);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
-    sum = kernel_write(fp, (char *)buf, buf_len, pos);
-#else
-    sum = vfs_write(fp, (char *)buf, buf_len, &pos);
-#endif
 
     set_fs(fs);
     __putname(path);

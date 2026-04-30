@@ -452,13 +452,9 @@ static void rwnx_rx_data_skb_forward(struct rwnx_hw *rwnx_hw, struct rwnx_vif *r
 #ifdef CONFIG_BR_SUPPORT
     void *br_port = NULL;
     if (1) {  
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 35))
-        br_port = rwnx_vif->ndev->br_port;
-#else
         rcu_read_lock();
         br_port = rcu_dereference(rwnx_vif->ndev->rx_handler_data);
         rcu_read_unlock();
-#endif
         if (br_port) {
             int nat25_handle_frame(struct rwnx_vif *vif, struct sk_buff *skb);
             
@@ -511,15 +507,7 @@ static void rwnx_rx_data_skb_forward(struct rwnx_hw *rwnx_hw, struct rwnx_vif *r
         if (in_interrupt()) {
             netif_rx(cur_skb);
         } else {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
             netif_rx_ni(cur_skb);
-#else
-            ulong flags;
-            netif_rx(cur_skb);
-            local_irq_save(flags);
-            RAISE_RX_SOFTIRQ();
-            local_irq_restore(flags);
-#endif
         }
 #endif /* CONFIG_RX_NETIF_RECV_SKB */
 

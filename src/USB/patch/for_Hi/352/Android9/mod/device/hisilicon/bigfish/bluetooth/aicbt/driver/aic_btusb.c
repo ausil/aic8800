@@ -87,7 +87,7 @@ struct btusb_data {
     int tx_in_flight;
     spinlock_t txlock;
 	
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		spinlock_t rxlock;
 		struct sk_buff *evt_skb;
@@ -109,7 +109,7 @@ struct btusb_data {
     int suspend_count;
     uint16_t sco_handle;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
     int (*recv_bulk) (struct btusb_data * data, void *buffer, int count);
 #endif
@@ -128,9 +128,7 @@ struct btusb_data {
     AIC_sco_card_t  *pSCOSnd;
 #endif
 };
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 1)
 static bool reset_on_close = 0;
-#endif
 
 #ifdef CONFIG_SCO_OVER_HCI
 struct snd_sco_cap_timer {
@@ -168,20 +166,13 @@ static inline void set_dlfw_state_value(uint16_t change_value)
 
 static void aic_free( struct btusb_data *data)
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 1)
-    kfree(data);
-#endif
     return;
 }
 
 static struct btusb_data *aic_alloc(struct usb_interface *intf)
 {
     struct btusb_data *data;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 1)
-    data = kzalloc(sizeof(*data), GFP_KERNEL);
-#else
     data = devm_kzalloc(&intf->dev, sizeof(*data), GFP_KERNEL);
-#endif
     return data;
 }
 
@@ -1904,7 +1895,7 @@ struct aicbsp_info_t aicbsp_info = {
 #define FW_PATH_MAX 200
 
 char aic_fw_path[FW_PATH_MAX];
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 static const char* aic_default_fw_path = "/lib/firmware/aic8800DC";
 #elif CONFIG_BLUEDROID == 1
 static const char* aic_default_fw_path = "/vendor/etc/firmware";
@@ -2075,11 +2066,7 @@ int aic_load_firmware(u8 ** fw_buf, const char *name, struct device *device)
     }
 
 
-    #if LINUX_VERSION_CODE > KERNEL_VERSION(4, 13, 16)
     rdlen = kernel_read(fp, buffer, size, &fp->f_pos);
-    #else
-    rdlen = kernel_read(fp, fp->f_pos, buffer, size);
-    #endif
 
     if(size != rdlen){
             printk("%s: %s file rdlen invalid %d %d\n", __func__, name, (int)rdlen, size);
@@ -2431,7 +2418,7 @@ void check_sco_event(struct urb *urb)
     }
 }
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 static inline void btusb_free_frags(struct btusb_data *data)
 {
@@ -3061,7 +3048,7 @@ static int btusb_open(struct hci_dev *hdev)
 
     data->intf->needs_remote_wakeup = 1;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 		//err = download_patch(data->fw_info,1);
 		printk(" download_patch %d", err);
 		if (err < 0) {
@@ -3350,7 +3337,7 @@ int btusb_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
     if (!test_bit(HCI_RUNNING, &hdev->flags))
         return -EBUSY;
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 13, 0)
 	skb->dev = (void *)hdev;
 #endif
@@ -3472,16 +3459,6 @@ done:
     return err;
 }
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 4, 0)
-static void btusb_destruct(struct hci_dev *hdev)
-{
-    struct btusb_data *data = GET_DRV_DATA(hdev);
-
-    AICBT_DBG("%s: name %s", __func__, hdev->name);
-
-    kfree(data);
-}
-#endif
 
 static void btusb_notify(struct hci_dev *hdev, unsigned int evt)
 {
@@ -3705,7 +3682,7 @@ int bt_pm_notify(struct notifier_block *notifier, ulong pm_event, void *unused)
         }
 #endif
         if (!device_may_wakeup(&udev->dev)) {
-#if (CONFIG_RESET_RESUME || CONFIG_BLUEDROID)
+#if (CONFIG_RESET_RESUME) || (CONFIG_BLUEDROID)
             AICBT_INFO("%s:remote wakeup not supported, reset resume supported", __func__);
 #else
             fw_info->intf->needs_binding = 1;
@@ -3789,30 +3766,18 @@ int bt_reboot_notify(struct notifier_block *notifier, ulong pm_event, void *unus
 
 
 #ifdef CONFIG_SCO_OVER_HCI
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aic_snd_capture_timeout(ulong data)
-#else
 void aic_snd_capture_timeout(struct timer_list *t)
-#endif
 {
 	uint8_t null_data[255];
 	struct btusb_data *usb_data;
 	
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-    usb_data = (struct btusb_data *)data;
-#else
     usb_data = &snd_cap_timer.snd_usb_data;
-#endif
     aic_copy_capture_data_to_alsa(usb_data, null_data, snd_cap_timer.snd_sco_length/2);
 	//printk("%s enter\r\n", __func__);
     mod_timer(&snd_cap_timer.cap_timer,jiffies + msecs_to_jiffies(3));
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-void aic_snd_play_timeout(ulong data)
-#else
 void aic_snd_play_timeout(struct timer_list *t)
-#endif
 {
 	AIC_sco_card_t *pSCOSnd;
 	struct snd_pcm_runtime *runtime;
@@ -3821,11 +3786,7 @@ void aic_snd_play_timeout(struct timer_list *t)
 	struct btusb_data *usb_data;
 	int sco_packet_bytes;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-    usb_data = (struct btusb_data *)data;
-#else
     usb_data = &snd_cap_timer.snd_usb_data;
-#endif
 	pSCOSnd = usb_data->pSCOSnd;
 
 	if(test_bit(USB_PLAYBACK_RUNNING, &pSCOSnd->states)) {
@@ -3882,14 +3843,8 @@ static int snd_sco_capture_pcm_open(struct snd_pcm_substream * substream)
     memcpy(&substream->runtime->hw, &snd_card_sco_capture_default, sizeof(struct snd_pcm_hardware));
 	pSCOSnd->capture.buffer_pos = 0;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	init_timer(&snd_cap_timer.cap_timer);
-	snd_cap_timer.cap_timer.data = (unsigned long)pSCOSnd->usb_data;
-	snd_cap_timer.cap_timer.function = aic_snd_capture_timeout;
-#else
 	timer_setup(&snd_cap_timer.cap_timer, aic_snd_capture_timeout, 0);
 	snd_cap_timer.snd_usb_data = *(pSCOSnd->usb_data);
-#endif
 
     if(check_controller_support_msbc(pSCOSnd->dev)) {
         substream->runtime->hw.rates |= SNDRV_PCM_RATE_16000;
@@ -4030,14 +3985,8 @@ static int snd_sco_playback_pcm_open(struct snd_pcm_substream * substream)
     AIC_sco_card_t *pSCOSnd = substream->private_data;
     int err = 0;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	init_timer(&snd_cap_timer.play_timer);
-	snd_cap_timer.play_timer.data = (unsigned long)pSCOSnd->usb_data;
-	snd_cap_timer.play_timer.function = aic_snd_play_timeout;
-#else
 	timer_setup(&snd_cap_timer.play_timer, aic_snd_play_timeout, 0);
 	snd_cap_timer.snd_usb_data = *(pSCOSnd->usb_data);
-#endif
 	pSCOSnd->playback.buffer_pos = 0;
 
     AICBT_INFO("%s, rate : %d", __FUNCTION__, substream->runtime->rate);
@@ -4303,7 +4252,7 @@ static int btusb_probe(struct usb_interface *intf, const struct usb_device_id *i
     init_usb_anchor(&data->isoc_anchor);
     init_usb_anchor(&data->deferred);
 
-#if (CONFIG_BLUEDROID == 0)
+#if CONFIG_BLUEDROID == 0
 #if HCI_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		spin_lock_init(&data->rxlock);
 		data->recv_bulk = btusb_recv_bulk;
@@ -4358,20 +4307,12 @@ static int btusb_probe(struct usb_interface *intf, const struct usb_device_id *i
     hdev->send     = btusb_send_frame;
     hdev->notify   = btusb_notify;
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 4, 0)
     hci_set_drvdata(hdev, data);
-#else
-    hdev->driver_data = data;
-    hdev->destruct = btusb_destruct;
-    hdev->owner = THIS_MODULE;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 1)
     if (!reset_on_close){
         /* set_bit(HCI_QUIRK_RESET_ON_CLOSE, &hdev->quirks); */
         AICBT_DBG("%s: Set HCI_QUIRK_RESET_ON_CLOSE", __func__);
     }
-#endif
 
     /* Interface numbers are hardcoded in the specification */
     data->isoc = usb_ifnum_to_if(data->udev, 1);
@@ -4496,10 +4437,7 @@ static void btusb_disconnect(struct usb_interface *intf)
     else if (data->isoc)
         usb_driver_release_interface(&btusb_driver, data->isoc);
 
-#if !CONFIG_BLUEDROID
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 4, 0)
-    __hci_dev_put(hdev);
-#endif
+#if !(CONFIG_BLUEDROID)
 #endif
 
     hci_free_dev(hdev);
@@ -4654,9 +4592,7 @@ static struct usb_driver btusb_driver = {
 #endif
     .id_table    = btusb_table,
     .supports_autosuspend = 1,
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 7, 1)
     .disable_hub_initiated_lpm = 1,
-#endif
 };
 
 static int __init btusb_init(void)

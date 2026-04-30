@@ -52,13 +52,13 @@ typedef struct {
 #define USER_EXT_FLAGS_DEFAULT_D80      (USER_PWROFST_COVER_CALIB_FLAG)
 
 #define CFG_USER_PWROFST_COVER_CALIB_EN     (1)
-#if (defined(CONFIG_POWER_LIMIT))
+#if defined(CONFIG_POWER_LIMIT)
 #define CFG_USER_CHAN_MAX_TXPWR_EN          (1)
 #else
 #define CFG_USER_CHAN_MAX_TXPWR_EN          (0)
 #endif
 #define CFG_USER_TX_USE_ANA_F_EN            (0)
-#if (defined(CONFIG_PRBREQ_REPORT))
+#if defined(CONFIG_PRBREQ_REPORT)
 #define CFG_USER_APM_PRBRSP_OFFLOAD_DISABLE (1)
 #else
 #define CFG_USER_APM_PRBRSP_OFFLOAD_DISABLE (0)
@@ -109,7 +109,7 @@ u32 patch_tbl_d80[][2] =
             USER_IPA_CALIB_DISABLE_FLAG |
             #endif
         0) & ~(
-            #if !CFG_USER_PWROFST_COVER_CALIB_EN
+            #if !(CFG_USER_PWROFST_COVER_CALIB_EN)
             USER_PWROFST_COVER_CALIB_FLAG |
             #endif
         0)
@@ -151,7 +151,7 @@ int aicwf_patch_config_8800d80(struct aic_usb_dev *usb_dev)
     u32 rd_patch_addr;
     u32 aic_patch_addr;
     u32 config_base, aic_patch_str_base;
-    #if (NEW_PATCH_BUFFER_MAP)
+    #if NEW_PATCH_BUFFER_MAP
     u32 patch_buff_addr, patch_buff_base, rd_version_addr, rd_version_val;
     #endif
     uint32_t start_addr = 0x001D7000;
@@ -190,7 +190,7 @@ int aicwf_patch_config_8800d80(struct aic_usb_dev *usb_dev)
     AICWFDBG(LOGERROR, "%x=%x\n", rd_patch_addr_cfm.memaddr, rd_patch_addr_cfm.memdata);
     aic_patch_str_base = rd_patch_addr_cfm.memdata;
 
-    #if (NEW_PATCH_BUFFER_MAP)
+    #if NEW_PATCH_BUFFER_MAP
     if (chip_id == CHIP_REV_U01) {
         rd_version_addr = RAM_FMAC_FW_ADDR_8800D80 + 0x01C;
     } else {

@@ -52,7 +52,7 @@ extern void hw_uart_config_cback(void *p_mem);
 extern void hw_usb_config_cback(void *p_mem);
 extern void (*hw_config_cback)(void *p_mem);
 
-#if (HW_END_WITH_HCI_RESET == TRUE)
+#if HW_END_WITH_HCI_RESET == TRUE
 void hw_epilog_process(void);
 #endif
 
@@ -428,7 +428,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
 
         case BT_VND_OP_SCO_CFG:// 2
             {
-#if (SCO_CFG_INCLUDED == TRUE)
+#if SCO_CFG_INCLUDED == TRUE
                 hw_sco_config();
 #else
                 retval = -1;
@@ -533,7 +533,7 @@ static int op(bt_vendor_opcode_t opcode, void *param)
                 if (bt_vendor_cbacks)
                     bt_vendor_cbacks->epilog_cb(BT_VND_OP_RESULT_SUCCESS);
             } else {
-#if (HW_END_WITH_HCI_RESET == FALSE)
+#if HW_END_WITH_HCI_RESET == FALSE
                 if (bt_vendor_cbacks) {
                     bt_vendor_cbacks->epilog_cb(BT_VND_OP_RESULT_SUCCESS);
                 }

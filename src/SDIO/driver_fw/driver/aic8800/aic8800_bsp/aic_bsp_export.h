@@ -31,7 +31,7 @@ struct aicbsp_feature_t {
 	uint8_t  irqf;
 };
 
-#if defined(CONFIG_DPD) || defined(CONFIG_LOFT_CALIB)
+#if (defined(CONFIG_DPD)) || (defined(CONFIG_LOFT_CALIB))
 typedef struct {
     uint32_t bit_mask[3];
     uint32_t reserved;
