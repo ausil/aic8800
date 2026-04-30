@@ -140,7 +140,7 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
-* Tue Apr 29 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.0-1
+* Wed Apr 29 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.0-1
 - Rebase onto V5.0 SDK (git20260123.5f7be68d)
 - Port all 2.1.x Fedora fixes to new upstream base
 - Add PCIe driver support (aic8800-pcie-dkms subpackage)
