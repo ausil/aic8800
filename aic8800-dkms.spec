@@ -2,7 +2,7 @@
 
 Name:           aic8800-dkms
 Version:        %{modversion}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        AIC8800 WiFi/BT drivers (DKMS)
 License:        GPL-2.0-only
 URL:            https://github.com/radxa-pkg/aic8800
@@ -140,6 +140,9 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Sun Aug 30 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.0-2
+- update to radxa main with fixes for compiling on 7.1
+
 * Wed Apr 29 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.0-1
 - Rebase onto V5.0 SDK (git20260123.5f7be68d)
 - Port all 2.1.x Fedora fixes to new upstream base
