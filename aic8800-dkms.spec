@@ -1,8 +1,8 @@
-%global modversion 5.0.0
+%global modversion 5.0.1
 
 Name:           aic8800-dkms
 Version:        %{modversion}
-Release:        3%{?dist}
+Release:        1%{?dist}
 Summary:        AIC8800 WiFi/BT drivers (DKMS)
 License:        GPL-2.0-only
 URL:            https://github.com/radxa-pkg/aic8800
@@ -140,6 +140,9 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Sun Aug 30 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.1-1
+- Bump to 5.0.1
+
 * Sun Aug 30 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.0-3
 - apply 7.1 nd 7.2 patches
 
