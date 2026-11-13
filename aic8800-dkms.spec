@@ -1,4 +1,4 @@
-%global modversion 5.0.1
+%global modversion 5.0.2
 
 Name:           aic8800-dkms
 Version:        %{modversion}
@@ -140,6 +140,13 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Thu Nov 12 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.2-1
+- Rebase on main (5.0+git20260123.5f7be68d-11)
+- Fix building on Linux 7.3 and 7.4
+- usb: support UGREEN a69c:88de (AIC8800DC variant)
+- usb: fix start of the AIC8800DC MCU chip variant
+- usb: fix build when sprintf overlaps aic_fw_path
+
 * Sun Aug 30 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.1-1
 - Bump to 5.0.1
 
