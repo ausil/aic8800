@@ -2,7 +2,7 @@
 # Build source RPM for COPR submission
 set -euo pipefail
 
-VERSION=5.0.2
+VERSION=5.0.3
 NAME=aic8800-dkms
 TARDIR="${NAME}-${VERSION}"
 
