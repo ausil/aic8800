@@ -2,7 +2,7 @@
 
 Name:           aic8800-dkms
 Version:        %{modversion}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        AIC8800 WiFi/BT drivers (DKMS)
 License:        GPL-2.0-only
 URL:            https://github.com/radxa-pkg/aic8800
@@ -140,6 +140,10 @@ dkms remove -m aic8800-pcie -v %{modversion} --all --rpm_safe_upgrade || :
 /lib/firmware/aic8800/pcie/
 
 %changelog
+* Fri Nov 13 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.2-2
+- usb: drop trace_printk from rwnx_txdatacfm (no more DEBUG kernel banner)
+- usb: demote app_cmp message to debug level
+
 * Thu Nov 12 2026 Dennis Gilmore <dennis@gilmore.net.au> - 5.0.2-1
 - Rebase on main (5.0+git20260123.5f7be68d-11)
 - Fix building on Linux 7.3 and 7.4
