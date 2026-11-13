@@ -3178,9 +3178,52 @@ int aicwf_misc_ram_valid_check_8800dc(struct rwnx_hw *rwnx_hw, int *valid_out)
     uint32_t misc_ram_addr;
     uint32_t ram_base_addr, ram_word_cnt;
     uint32_t bit_mask[4];
+    uint32_t dpd_info_read_addr = 0xfe004;
+    uint32_t boot_argc_read_addr = 0x1220f0;
+    uint32_t flash_size_mem_addr = 0x40038030;
+    uint8_t flash_size = 0;
     int i;
     if (valid_out) {
         *valid_out = 0;
+    }
+    /* DPD result may already be valid (boot argc bit 4), then no calibration is needed */
+    ret = rwnx_send_dbg_mem_read_req(rwnx_hw, boot_argc_read_addr, &cfm);
+    if (ret) {
+        AICWFDBG(LOGERROR, "boot argc [0x%x] rd fail: %d\n", boot_argc_read_addr, ret);
+        return ret;
+    }
+    AICWFDBG(LOGINFO, "boot argc %x\n", cfm.memdata);
+    if (cfm.memdata & 0x10) {
+        if (valid_out) {
+            *valid_out = 1;
+        }
+        return ret;
+    }
+    if (chip_mcu_id) {
+        /* MCU variant keeps the DPD result in flash, its size selects the offset */
+        ret = rwnx_send_dbg_mem_read_req(rwnx_hw, flash_size_mem_addr, &cfm);
+        if (ret) {
+            AICWFDBG(LOGERROR, "flash size[0x%x] rd fail: %d\n", flash_size_mem_addr, ret);
+            return ret;
+        }
+        flash_size = cfm.memdata & 0xff;
+        AICWFDBG(LOGINFO, "flash size %x\n", flash_size);
+        if (flash_size == 0x16) {
+            dpd_info_read_addr += 0x4300000;
+        } else if (flash_size == 0x18) {
+            dpd_info_read_addr += 0x4700000;
+        } else {
+            dpd_info_read_addr += 0x4100000;
+        }
+        ret = rwnx_send_dbg_mem_read_req(rwnx_hw, dpd_info_read_addr, &cfm);
+        if (ret) {
+            AICWFDBG(LOGERROR, "dpd info [0x%x] rd fail: %d\n", dpd_info_read_addr, ret);
+            return ret;
+        }
+        if ((cfm.memdata & (1 << 7)) && valid_out) {
+            *valid_out = 1;
+        }
+        return ret;
     }
     if (testmode == FW_RFTEST_MODE) {
 	    uint32_t vect1 = 0;
@@ -3733,6 +3776,7 @@ void system_config_8800dc(struct rwnx_hw *rwnx_hw){
     array3_tbl_t p_syscfg_msk_tbl;
     int ret, cnt;
     const u32 mem_addr = 0x40500000;
+    const u32 cache_mem_addr = 0x40100020;
     struct dbg_mem_read_cfm rd_mem_addr_cfm;
 
     ret = rwnx_send_dbg_mem_read_req(rwnx_hw, mem_addr, &rd_mem_addr_cfm);
@@ -3744,6 +3788,21 @@ void system_config_8800dc(struct rwnx_hw *rwnx_hw){
     //printk("%x=%x\n", rd_mem_addr_cfm.memaddr, rd_mem_addr_cfm.memdata);
     if (((rd_mem_addr_cfm.memdata >> 25) & 0x01UL) == 0x00UL) {
         chip_mcu_id = 1;
+    }
+
+    if (chip_mcu_id) {
+        /* MCU variant executes from flash, the cache has to be enabled */
+        ret = rwnx_send_dbg_mem_read_req(rwnx_hw, cache_mem_addr, &rd_mem_addr_cfm);
+        if (ret) {
+            AICWFDBG(LOGERROR, "%x rd fail: %d\n", cache_mem_addr, ret);
+            return;
+        }
+        rd_mem_addr_cfm.memdata |= 0x01;
+        ret = rwnx_send_dbg_mem_write_req(rwnx_hw, cache_mem_addr, rd_mem_addr_cfm.memdata);
+        if (ret) {
+            AICWFDBG(LOGERROR, "%x write fail: %d\n", cache_mem_addr, ret);
+            return;
+        }
     }
 
     ret = rwnx_send_dbg_mem_read_req(rwnx_hw, 0x00000020, &rd_mem_addr_cfm);
