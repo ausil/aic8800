@@ -235,7 +235,7 @@ static void aicwf_usb_rx_submit_all_urb(struct aic_usb_dev *usb_dev)
         return;
     }
     if (usb_dev->app_cmp) {
-        printk("app_cmp\r\n");
+        AICWFDBG(LOGDEBUG, "app_cmp\n");
         return;
 }
 
