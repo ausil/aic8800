@@ -2135,10 +2135,18 @@ bool key_flag = false;
     struct net_device *netdev,
 #endif
 																	 int link_id,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 4, 0)
+									 u8 key_index, enum nl80211_key_type key_type,
+									 const u8 *mac_addr,
+#else
 									 u8 key_index, bool pairwise, const u8 *mac_addr,
+#endif
 									 struct key_params *params)
 
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 4, 0)
+	bool pairwise = key_type == NL80211_KEYTYPE_PAIRWISE;
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0)
 	struct net_device *netdev = wdev->netdev;
 #endif
@@ -2256,7 +2264,12 @@ static int rwnx_cfg80211_get_key(struct wiphy *wiphy,
     struct net_device *netdev,
 #endif
                                                                  int link_id,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 4, 0)
+								 u8 key_index, enum nl80211_key_type key_type,
+								 const u8 *mac_addr,
+#else
 								 u8 key_index, bool pairwise, const u8 *mac_addr,
+#endif
 								 void *cookie,
 								 void (*callback)(void *cookie, struct key_params*))
 {
@@ -2277,7 +2290,12 @@ static int rwnx_cfg80211_del_key(struct wiphy *wiphy,
     struct net_device *netdev,
 #endif
                                                                  int link_id,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 4, 0)
+								 u8 key_index, enum nl80211_key_type key_type,
+								 const u8 *mac_addr)
+#else
 								 u8 key_index, bool pairwise, const u8 *mac_addr)
+#endif
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 1, 0)
 	struct net_device *netdev = wdev->netdev;
@@ -2424,7 +2442,11 @@ static int rwnx_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 		                      dev,
 #endif
                                 0,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 4, 0)
+				sme->key_idx, NL80211_KEYTYPE_GROUP, NULL, &key_params);
+#else
 				sme->key_idx, false, NULL, &key_params);
+#endif
 	}
 	else if ((sme->auth_type == NL80211_AUTHTYPE_SAE) &&
 			 !(sme->flags & CONNECT_REQ_EXTERNAL_AUTH_SUPPORT)) {
