@@ -10,6 +10,7 @@
 #ifndef _RWNX_TX_H_
 #define _RWNX_TX_H_
 
+#include <linux/version.h>
 #include <linux/ieee80211.h>
 #include <net/cfg80211.h>
 #include <linux/netdevice.h>
@@ -125,6 +126,9 @@ struct rwnx_sw_txhdr {
 #endif
 	u32 need_cfm;
 	struct sk_buff *skb;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+	u64 mgmt_cookie;  /* cfg80211's mgmt_tx cookie, 0 if none; see rwnx_txdatacfm() */
+#endif
 
 	size_t map_len;
 	dma_addr_t dma_addr;

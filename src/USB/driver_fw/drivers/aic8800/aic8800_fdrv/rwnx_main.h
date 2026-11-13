@@ -87,7 +87,11 @@ int rwnx_cfg80211_set_monitor_channel_(struct wiphy *wiphy,
                                              struct net_device *dev,
                                              struct cfg80211_chan_def *chandef);
 int rwnx_cfg80211_probe_client(struct wiphy *wiphy, struct net_device *dev,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+            const u8 *peer, u64 cookie);
+#else
             const u8 *peer, u64 *cookie);
+#endif
 void rwnx_cfg80211_mgmt_frame_register(struct wiphy *wiphy,
                    struct wireless_dev *wdev,
                    u16 frame_type, bool reg);

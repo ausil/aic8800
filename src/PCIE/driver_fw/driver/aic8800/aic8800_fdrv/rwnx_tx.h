@@ -10,6 +10,7 @@
 #ifndef _RWNX_TX_H_
 #define _RWNX_TX_H_
 
+#include <linux/version.h>
 #include <linux/ieee80211.h>
 #include <net/cfg80211.h>
 #include <linux/netdevice.h>
@@ -131,6 +132,9 @@ struct rwnx_sw_txhdr {
 #endif
 	
 	struct sk_buff *skb;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 3, 0)
+	u64 mgmt_cookie;  /* cfg80211's mgmt_tx cookie, 0 if none; see rwnx_txdatacfm() */
+#endif
 
     struct rwnx_ipc_buf ipc_data;
     struct rwnx_ipc_buf ipc_desc;
